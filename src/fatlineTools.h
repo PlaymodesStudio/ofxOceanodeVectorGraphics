@@ -79,6 +79,7 @@ public:
 //        }else{
 //            doubleWeights = vector<double>(w->begin(), w->end());
 //        }
+		if(points.back().size() == 0) points.pop_back();
         
         auto getFromVec = [](const vector<float> vf, int index) -> float{
             if(index < vf.size()) return vf[index];
