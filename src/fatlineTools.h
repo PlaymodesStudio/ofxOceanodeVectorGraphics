@@ -375,15 +375,24 @@ public:
 		
 		listeners.push(x.newListener([this](vector<float> &vf){
 			if(x->size() == y->size()){
-				x_tmp.resize((x->size()*2));
-				y_tmp.resize((x->size()*2));
+				x_tmp.clear();
+				y_tmp.clear();
+				x_tmp.reserve((x->size()*2));
+				y_tmp.reserve((x->size()*2));
 				
 				for(int i = 0; i < x->size(); i++){
-					x_tmp[(i*2)] = x->at(i);
-					y_tmp[(i*2)] = y->at(i);
-					
-					x_tmp[(i*2)+1] = -1;
-					y_tmp[(i*2)+1] = -1;
+//					x_tmp[(i*2)] = x->at(i);
+//					y_tmp[(i*2)] = y->at(i);
+//
+//					x_tmp[(i*2)+1] = -1;
+//					y_tmp[(i*2)+1] = -1;
+					if(x->at(i) != -1){
+						x_tmp.push_back(x->at(i));
+						y_tmp.push_back(y->at(i));
+						
+						x_tmp.push_back(-1);
+						y_tmp.push_back(-1);
+					}
 				}
 				x_out = x_tmp;
 				y_out = y_tmp;
