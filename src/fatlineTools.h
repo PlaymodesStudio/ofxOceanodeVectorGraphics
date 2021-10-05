@@ -44,7 +44,7 @@ public:
 				points[i].resize(iterend - iterbegin);
 				int beginIndex = iterbegin - x->begin();
 				for(int j = 0; j < points[i].size(); j++){
-					points[i][j] = glm::vec3(x.get()[beginIndex+j] * width, y.get()[beginIndex+j] * height, 0);
+					points[i][j] = glm::vec3(ofMap(x.get()[beginIndex+j], 0, 1, 5, width-5), ofMap(y.get()[beginIndex+j], 0, 1, 5, height-5), 0);
 				}
 				iterbegin = iterend+1;
 				iterend = std::find(iterbegin, x->end(), -1);
@@ -54,7 +54,7 @@ public:
 			points[i].resize(iterend - iterbegin);
 			int beginIndex = iterbegin - x->begin();
 			for(int j = 0; j < points[i].size(); j++){
-				points[i][j] = glm::vec3(x.get()[beginIndex+j] * width, y.get()[beginIndex+j] * height, 0);
+				points[i][j] = glm::vec3(ofMap(x.get()[beginIndex + j], 0, 1, 5, width - 5), ofMap(y.get()[beginIndex + j], 0, 1, 5, height - 5), 0);
 			}
 			
 //            points.resize(close ? x->size() + 1 : x->size());
