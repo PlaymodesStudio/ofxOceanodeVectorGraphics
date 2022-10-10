@@ -120,6 +120,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<segmentsMaker>("Vector Graphics");
 	o.registerModel<multiSegments>("Vector Graphics");
 	o.registerModel<shapeTransform>("Vector Graphics");
+	o.registerModel<polygonCreator>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
     o.registerType<ofPolyline>("Polyline");
