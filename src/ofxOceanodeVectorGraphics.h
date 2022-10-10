@@ -122,10 +122,10 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<shapeTransform>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
-    o.registerType<ofPolyline>();//"Polyline");
-    o.registerType<vector<ofPolyline>>();
-    o.registerType<ofxFatLine>();
-    o.registerType<vector<ofxFatLine>>();
+    o.registerType<ofPolyline>("Polyline");
+    o.registerType<vector<ofPath>>("v_Poly");
+    o.registerType<ofxFatLine>("Fatline");
+    o.registerType<vector<ofxFatLine>>("v_Fatline");
 }
 static void registerScope(ofxOceanode &o){
     o.registerScope<ofPolyline>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
@@ -138,16 +138,16 @@ static void registerScope(ofxOceanode &o){
                 draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(255, 255, 0, 255), 2.0f);
         }
     });
-    o.registerScope<vector<ofPolyline>>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
-        auto polylines = p->cast<vector<ofPolyline>>().getParameter().get();
+    o.registerScope<vector<ofPath>>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
+        auto polylines = p->cast<vector<ofPath>>().getParameter().get();
         
         for(auto p : polylines){
-            auto polylineVertices = p.getVertices();
+            auto polylineVertices = p.getOutline()[0].getVertices();
             ImVec2 origin = ImGui::GetCursorScreenPos();
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
             if(polylineVertices.size() > 1){
                 for (int n = 0; n < polylineVertices.size() - 1; n++)
-                    draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(255, 255, 0, 255), 2.0f);
+                    draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(p.getStrokeColor().r, p.getStrokeColor().g, p.getStrokeColor().b, p.getStrokeColor().a), p.getStrokeWidth());
             }
         }
     });
