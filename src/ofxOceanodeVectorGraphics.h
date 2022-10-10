@@ -109,7 +109,8 @@ namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
     o.registerModel<fatlineGenerator>("Vector Graphics");
     o.registerModel<fatlineRenderer>("Vector Graphics");
-    o.registerModel<fatlineFourier>("Vector Graphics");
+    o.registerModel<fourierShape>("Vector Graphics");
+	o.registerModel<inverseFourierShape>("Vector Graphics");
     o.registerModel<svgModulator>("Vector Graphics");
 	o.registerModel<polylineGenerator>("Vector Graphics");
 	o.registerModel<polylineRenderer>("Vector Graphics");
