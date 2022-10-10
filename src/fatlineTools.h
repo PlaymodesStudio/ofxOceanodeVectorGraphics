@@ -445,8 +445,8 @@ public:
 						y_tmp.push_back(-1);
 					}
 				}
+                y_out = y_tmp;
 				x_out = x_tmp;
-				y_out = y_tmp;
 			}
 		}));
 		
@@ -517,8 +517,8 @@ public:
 						y_tmp[(i*(numVertex+1))+numVertex] = -1;
 					}
 				}
+                y_out = y_tmp;
 				x_out = x_tmp;
-				y_out = y_tmp;
 			}
 		}));
 		
@@ -561,8 +561,8 @@ public:
 					x_tmp[(i*3)+2] = -1;
 					y_tmp[(i*3)+2] = -1;
 				}
+                y_out = y_tmp;
 				x_out = x_tmp;
-				y_out = y_tmp;
 			}
 		}));
 		
@@ -653,8 +653,8 @@ public:
 						y_tmp[i] = -1;
 					}
 				}
+                yOut = y_tmp;
 				xOut = x_tmp;
-				yOut = y_tmp;
 			}
 		}));
 		
