@@ -325,43 +325,90 @@ public:
 		addParameter(x.set("X", {0.5}, {0}, {1}));
         addParameter(y.set("Y", {0.5}, {0}, {1}));
 		addParameter(numPoints.set("Num", {100}, {1}, {INT_MAX}));
+        addParameter(withSpacing.set("Use Spa", false));
+        addParameter(spacing.set("Spacing", 0.1, 0, 1));
 		addParameter(x_out.set("X_out", {0.5}, {0}, {1}));
         addParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
 		
 		listeners.push(x.newListener([this](vector<float> &vf){
-			if(x->size() == y->size()){
-				ofPolyline poly;
-				for(int i = 0; i < x->size(); i++){
-					poly.lineTo(x->at(i), y->at(i));
-				}
-				poly = poly.getResampledByCount(numPoints);
-				for(int i = 0; i < numPoints; i++){
-					auto point = poly[i];
-					x_tmp[i] = point.x;
-					y_tmp[i] = point.y;
-				}
-				x_out = x_tmp;
-				y_out = y_tmp;
-			}
+//			if(x->size() == y->size()){
+//				ofPolyline poly;
+//				for(int i = 0; i < x->size(); i++){
+//					poly.lineTo(x->at(i), y->at(i));
+//				}
+//				poly = poly.getResampledByCount(numPoints);
+//				for(int i = 0; i < numPoints; i++){
+//					auto point = poly[i];
+//					x_tmp[i] = point.x;
+//					y_tmp[i] = point.y;
+//				}
+//				x_out = x_tmp;
+//				y_out = y_tmp;
+//			}
+            
+            if(x->size() == y->size()){
+                int numShapes = 1;
+                for(int i = 0; i < x->size()-1; i++){ //Skip last in case is a -1
+                    if(x->at(i) == -1){
+                        numShapes++;
+                    }
+                }
+                
+                x_tmp.clear();
+                y_tmp.clear();
+                x_tmp.reserve((numPoints+1) * numShapes); //Add one for the -1
+                y_tmp.reserve((numPoints+1) * numShapes);
+                
+                ofPolyline poly;
+                for(int i = 0; i < x->size(); i++){
+                    if(x->at(i) == -1){
+                        if(withSpacing){
+                            poly = poly.getResampledBySpacing(spacing);
+                        }else{
+                            poly = poly.getResampledByCount(numPoints);
+                        }
+                        for(int j = 0; j < poly.size(); j++){
+                            x_tmp.push_back(poly[j].x);
+                            y_tmp.push_back(poly[j].y);
+                        }
+                        x_tmp.push_back(-1);
+                        y_tmp.push_back(-1);
+                        poly.clear();
+                    }else{
+                        poly.lineTo(x->at(i), y->at(i));
+                    }
+                }
+                if(poly.size() != 0){
+                    if(withSpacing){
+                        poly = poly.getResampledBySpacing(spacing);
+                    }else{
+                        poly = poly.getResampledByCount(numPoints);
+                    }
+                    for(int j = 0; j < poly.size(); j++){
+                        x_tmp.push_back(poly[j].x);
+                        y_tmp.push_back(poly[j].y);
+                    }
+                }
+                y_out = y_tmp;
+                x_out = x_tmp;
+            }
 		}));
 		
 		listeners.push(numPoints.newListener([this](int &i){
-			x_tmp.resize(i);
-			y_tmp.resize(i);
+//			x_tmp.resize(i);
+//			y_tmp.resize(i);
 		}));
 		
 		x_tmp.resize(100);
 		y_tmp.resize(100);
-		
-//		listeners.push(y.newListener([this](vector<float> &vf){
-//
-//		}));
 	}
 	
 private:
 	ofParameter<vector<float>> x, y;
 	vector<float> x_tmp, y_tmp;
 	ofParameter<vector<float>> x_out, y_out;
+    ofParameter<bool> withSpacing;
+    ofParameter<float> spacing;
 	ofParameter<int> numPoints;
 
 	ofEventListeners listeners;
