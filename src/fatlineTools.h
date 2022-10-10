@@ -35,7 +35,8 @@ public:
         bool close = false;
         vector<vector<glm::vec3>> points;
 		int index = 0;
-        if(x->size() == y->size()){
+        int maxSize = 0;
+        if(x->size() == y->size() && x->size() > 1) {
 			auto iterbegin = x->begin();
 			auto iterend = std::find(x->begin(), x->end(), -1);
 			int i = 0;
@@ -48,6 +49,7 @@ public:
 				}
 				iterbegin = iterend+1;
 				iterend = std::find(iterbegin, x->end(), -1);
+                if(points[i].size() > maxSize) maxSize = points[i].size();
 				i++;
 			}
 			points.emplace_back();
@@ -61,18 +63,18 @@ public:
 //            for(int i = 0; i < points.size(); i++){
 //                points[i] = glm::vec3(x.get()[i] * width, y.get()[i] * height, 0);
 //            }
-        }else if(x->size() > y->size()){
-			points.resize(1);
-            points[0].resize(close ? x->size() + 1 : x->size());
-            for(int i = 0; i < points[0].size(); i++){
-                points[0][i] = glm::vec3(x.get()[i] * width, y.get()[0] * height, 0);
-            }
-        }else if(x->size() < y->size()){
-			points.resize(1);
-            points[0].resize(close ? y->size() + 1 : y->size());
-            for(int i = 0; i < points[0].size(); i++){
-                points[0][i] = glm::vec3(x.get()[0] * width, y.get()[i] * height, 0);
-            }
+//        }else if(x->size() > y->size()){
+//			points.resize(1);
+//            points[0].resize(close ? x->size() + 1 : x->size());
+//            for(int i = 0; i < points[0].size(); i++){
+//                points[0][i] = glm::vec3(x.get()[i] * width, y.get()[0] * height, 0);
+//            }
+//        }else if(x->size() < y->size()){
+//			points.resize(1);
+//            points[0].resize(close ? y->size() + 1 : y->size());
+//            for(int i = 0; i < points[0].size(); i++){
+//                points[0][i] = glm::vec3(x.get()[0] * width, y.get()[i] * height, 0);
+//            }
         }
 		
 //		vector<double> doubleWeights;
@@ -81,7 +83,7 @@ public:
 //        }else{
 //            doubleWeights = vector<double>(w->begin(), w->end());
 //        }
-		if(points.back().size() == 0) points.pop_back();
+		//if(points.back().size() == 0) points.pop_back();
         
         auto getFromVec = [](const vector<float> vf, int index) -> float{
             if(index < vf.size()) return vf[index];
@@ -104,7 +106,7 @@ public:
 			}
 			
 			fatlines[i].add(points[i], colors, doubleWeights);
-			accumPosition += points[i].size();
+			accumPosition += maxSize;
 		}
 		output.set(fatlines);
 	}
