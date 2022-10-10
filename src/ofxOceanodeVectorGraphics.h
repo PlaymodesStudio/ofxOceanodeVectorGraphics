@@ -105,6 +105,29 @@ private:
     ofParameter<ofTexture*> output;
 };
 
+class removeZeros : public ofxOceanodeNodeModel{
+public:
+    removeZeros() : ofxOceanodeNodeModel("Remove Zeros"){}
+    
+    void setup(){
+        addParameter(input.set("Input", {0}, {0}, {1}));
+        addOutputParameter(output.set("Output", {0}, {0}, {1}));
+        
+        listener = input.newListener([this](vector<float> &vf){
+            tempOut = vf;
+            tempOut.erase(std::remove(tempOut.begin(), tempOut.end(), -1), tempOut.end());
+            output = tempOut;
+        });
+    }
+    
+private:
+    ofParameter<vector<float>> input;
+    ofParameter<vector<float>> output;
+    ofEventListener listener;
+    
+    vector<float> tempOut;
+};
+
 namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
     o.registerModel<fatlineGenerator>("Vector Graphics");
@@ -121,6 +144,12 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<multiSegments>("Vector Graphics");
 	o.registerModel<shapeTransform>("Vector Graphics");
 	o.registerModel<polygonCreator>("Vector Graphics");
+	o.registerModel<pointMatrix>("Vector Graphics");
+    o.registerModel<removeZeros>("Vector Graphics");
+    o.registerModel<bezierCurve>("Vector Graphics");
+    o.registerModel<radialModulation>("Vector Graphics");
+    o.registerModel<shapeInterpolator>("Vector Graphics");
+    o.registerModel<pointAtPercent>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
     o.registerType<ofPolyline>("Polyline");
