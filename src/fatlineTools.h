@@ -194,6 +194,26 @@ public:
 		addParameter(x.set("X", {0.5}, {0}, {1}));
         addParameter(y.set("Y", {0.5}, {0}, {1}));
 		addParameter(numPoints.set("Num", {1}, {1}, {INT_MAX}));
+        
+        listeners.push(x.newListener([this](vector<float> &vf){
+            if(x->size() == y->size() && !outputingValues){
+                points.clear();
+                points.resize(x->size());
+                for(int i = 0; i < points.size(); i++){
+                    points[i] == glm::vec2(x->at(i), y->at(i));
+                }
+            }
+        }));
+        
+        listeners.push(y.newListener([this](vector<float> &vf){
+            if(x->size() == y->size() && !outputingValues){
+                points.clear();
+                points.resize(x->size());
+                for(int i = 0; i < points.size(); i++){
+                    points[i] == glm::vec2(x->at(i), y->at(i));
+                }
+            }
+        }));
 		
 		points.emplace_back(0.5, 0.5);
         
@@ -279,8 +299,10 @@ public:
 				y_t[i] = points[i].y;
 			}
 			draw_list->ChannelsMerge();
+            outputingValues = true;
+            y = y_t;
 			x = x_t;
-			y = y_t;
+            outputingValues = false;
 			numPoints = points.size();
         }
         ImGui::End();
@@ -313,8 +335,11 @@ private:
     ofParameter<vector<float>> x, y;
 	ofParameter<int> numPoints;
 	vector<glm::vec2> points;
+    
+    ofEventListeners listeners;
 	
 	int pointDraggingIndex = -1;
+    bool outputingValues = false;
 };
 
 class pointsResampler : public ofxOceanodeNodeModel {
