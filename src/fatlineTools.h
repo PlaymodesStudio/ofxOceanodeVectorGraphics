@@ -275,12 +275,10 @@ public:
 				else if(ImGui::IsMouseDragging(0)){
 					if(pointDraggingIndex != -1){
 						if(ImGui::GetIO().KeyAlt){
-							glm::vec2 oldPos = points[pointDraggingIndex];
-							glm::vec2 step = oldPos - ((ImGui::GetMousePos() - screenPos) / screenSize);
-							points[pointDraggingIndex] = oldPos - (step/100.0);
+                            points[pointDraggingIndex] += ImGui::GetIO().MouseDelta / (screenSize * ImVec2(100, 100));
 						}else{
-							points[pointDraggingIndex] = (ImGui::GetMousePos() - screenPos) / screenSize;
-						}
+                            points[pointDraggingIndex] += ImGui::GetIO().MouseDelta / screenSize;
+                        }
 					}else if(ImGui::GetIO().KeyShift){
 						points.push_back((ImGui::GetMousePos() - screenPos) / screenSize);
 					}
