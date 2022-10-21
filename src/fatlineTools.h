@@ -239,16 +239,17 @@ public:
             }
             ImGui::Image(textureID, screenSize);
 			if(ImGui::IsWindowHovered()){
-				glm::vec2 normPos = glm::vec2(-1, -1);
+				glm::vec2 normPos = (ImGui::GetMousePos() - screenPos) / screenSize;
 				bool addRemove = false;
+                bool mouseClicked = false;
                 if(ImGui::IsMouseClicked(0)){
-                    normPos = (ImGui::GetMousePos() - screenPos) / screenSize;
+                    mouseClicked = true;
                 }
                 else if(ImGui::IsMouseClicked(1)){
-                    normPos = (ImGui::GetMousePos() - screenPos) / screenSize;
+                    mouseClicked = true;
 					addRemove = true;
                 }
-				if(normPos != glm::vec2(-1, -1)){
+				if(mouseClicked){
 					bool foundPoint = false;
 					for(int i = points.size()-1; i >= 0 && !foundPoint ; i--){
 						auto point = (points[i] * screenSize) + screenPos;
@@ -269,8 +270,11 @@ public:
 							pointDraggingIndex = -1;
 						}else{
 							points.push_back(normPos);
+                            pointDraggingIndex = points.size()-1;
 						}
-					}
+                    }else if(!foundPoint){
+                        pointDraggingIndex = -1;
+                    }
 				}
 				else if(ImGui::IsMouseDragging(0)){
 					if(pointDraggingIndex != -1){
@@ -282,15 +286,14 @@ public:
 					}else if(ImGui::GetIO().KeyShift){
 						points.push_back((ImGui::GetMousePos() - screenPos) / screenSize);
 					}
-				}else if(ImGui::IsMouseReleased(0) || ImGui::IsMouseReleased(1)){
-					pointDraggingIndex = -1;
 				}
             }
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			vector<float> x_t(points.size());
 			vector<float> y_t(points.size());
 			for(int i = 0; i < points.size(); i++){
-				draw_list->AddCircleFilled((points[i] * screenSize) + screenPos, 10, IM_COL32(255, 255, 255, 255));
+                if(pointDraggingIndex == i) draw_list->AddCircleFilled((points[i] * screenSize) + screenPos, 10, IM_COL32(255, 255, 0, 255));
+				else draw_list->AddCircleFilled((points[i] * screenSize) + screenPos, 10, IM_COL32(255, 255, 255, 255));
 				string numString = ofToString(i);
 				draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), (points[i] * screenSize) + screenPos - glm::vec2(5, 5), IM_COL32(0,0,0,255), numString.c_str(), numString.c_str()+ (i < 10 ? 1 : 2));
 				x_t[i] = points[i].x;
