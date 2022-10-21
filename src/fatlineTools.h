@@ -193,6 +193,8 @@ public:
         addParameter(input.set("Input", nullptr));
 		addParameter(x.set("X", {0.5}, {0}, {1}));
         addParameter(y.set("Y", {0.5}, {0}, {1}));
+        addParameter(mouseX.set("M.x", 0.5, 0, 1));
+        addParameter(mouseY.set("M.y", 0.5, 0, 1));
 		addParameter(numPoints.set("Num", {1}, {1}, {INT_MAX}));
         
         listeners.push(x.newListener([this](vector<float> &vf){
@@ -287,6 +289,8 @@ public:
 						points.push_back((ImGui::GetMousePos() - screenPos) / screenSize);
 					}
 				}
+                mouseY = normPos.y;
+                mouseX = normPos.x;
             }
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 			vector<float> x_t(points.size());
@@ -334,6 +338,7 @@ private:
     ofParameter<ofTexture*> input;
     ofTexture black;
     ofParameter<vector<float>> x, y;
+    ofParameter<float> mouseX, mouseY;
 	ofParameter<int> numPoints;
 	vector<glm::vec2> points;
     
