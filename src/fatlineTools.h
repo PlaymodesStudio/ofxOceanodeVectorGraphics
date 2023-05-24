@@ -288,7 +288,18 @@ public:
 					}else if(ImGui::GetIO().KeyShift){
 						points.push_back((ImGui::GetMousePos() - screenPos) / screenSize);
 					}
-				}
+                }else if(pointDraggingIndex != -1){
+                    float moveAmt = ImGui::GetIO().KeyAlt ? 0.00001 : 0.001;
+                    if(ImGui::IsKeyDown(ImGuiKey_LeftArrow)){
+                        points[pointDraggingIndex] += glm::vec2(-moveAmt, 0);
+                    }else if(ImGui::IsKeyDown(ImGuiKey_RightArrow)){
+                        points[pointDraggingIndex] += glm::vec2(moveAmt, 0);
+                    }if(ImGui::IsKeyDown(ImGuiKey_UpArrow)){
+                        points[pointDraggingIndex] += glm::vec2(0, -moveAmt);
+                    }else if(ImGui::IsKeyDown(ImGuiKey_DownArrow)){
+                        points[pointDraggingIndex] += glm::vec2(0, moveAmt);
+                    }
+                }
                 mouseY = normPos.y;
                 mouseX = normPos.x;
             }
