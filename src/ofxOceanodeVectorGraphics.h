@@ -76,11 +76,14 @@ public:
         }
 		if(points.back().size() == 0) points.pop_back();
 		
-		auto getFromVec = [](const vector<float> vf, int index) -> float{
-            if(index < vf.size()) return vf[index];
-            return vf[0];
+        auto getFromVec = [](const vector<float>& vf, int index) -> float{
+            if (!vf.empty()) {
+                if(index < vf.size()) return vf[index];
+                return vf[0];
+            }
+            return 0.0f;
         };
-        		
+
 		vector<ofPath> lines(points.size());
 		
 		for(int i = 0 ; i < points.size(); i++){
