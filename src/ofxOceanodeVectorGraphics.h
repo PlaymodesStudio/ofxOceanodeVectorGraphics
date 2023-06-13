@@ -228,6 +228,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<polylineRenderer>("Vector Graphics");
 	o.registerModel<manualPoints>("Vector Graphics");
 	o.registerModel<pointsResampler>("Vector Graphics");
+    o.registerModel<pointsResamplerIndex>("Vector Graphics");
 	o.registerModel<dotMaker>("Vector Graphics");
 	o.registerModel<segmentsMaker>("Vector Graphics");
 	o.registerModel<multiSegments>("Vector Graphics");
