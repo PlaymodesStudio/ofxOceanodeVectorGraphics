@@ -300,6 +300,9 @@ public:
                         points[pointDraggingIndex] += glm::vec2(0, moveAmt);
                     }
                 }
+                if(ImGui::IsKeyPressed(ImGuiKey_Tab)){
+                    pointDraggingIndex = (pointDraggingIndex + 1) % points.size();
+                }
                 mouseY = normPos.y;
                 mouseX = normPos.x;
             }
