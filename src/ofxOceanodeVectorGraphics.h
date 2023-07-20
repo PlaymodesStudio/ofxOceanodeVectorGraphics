@@ -241,6 +241,7 @@ static void registerModels(ofxOceanode &o){
     o.registerModel<shapeInterpolator>("Vector Graphics");
     o.registerModel<pointAtPercent>("Vector Graphics");
     o.registerModel<shapeFeather>("Vector Graphics");
+    o.registerModel<shapeLength>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
     o.registerType<ofPolyline>("Polyline");
