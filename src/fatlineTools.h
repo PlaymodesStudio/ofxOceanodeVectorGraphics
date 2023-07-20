@@ -471,7 +471,7 @@ public:
 //                y_out = y_tmp;
 //            }
             
-            if(x->size() == y->size()){
+            if(x->size() == y->size() && x->size() > 0){
                 int numShapes = 1;
                 for(int i = 0; i < x->size()-1; i++){ //Skip last in case is a -1
                     if(x->at(i) == -1){
