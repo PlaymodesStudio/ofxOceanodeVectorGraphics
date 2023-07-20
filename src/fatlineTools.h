@@ -814,6 +814,8 @@ public:
 		addParameter(rotate.set("Rot", {0}, {0}, {1}));
 		addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
         addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
+        
+        addInspectorParameter(overlap.set("Overlap", 1, 0, FLT_MAX));
 	}
 	
 	void update(ofEventArgs &a){
@@ -842,7 +844,7 @@ public:
 			ofPoint newVertex;
 			int counter = 0;
 			for(int j = 0 ; j < (getParameterValueForPosition(sides, i) + closed) ; j++){
-				float jj = (j / (float)getParameterValueForPosition(sides, i)) + getParameterValueForPosition(rotate, i);
+				float jj = ((j * overlap) / (float)getParameterValueForPosition(sides, i)) + getParameterValueForPosition(rotate, i);
 				
 				newVertex.x = (sin(jj*2*PI)*getParameterValueForPosition(scaleX, i)/2)+position.x;
 				newVertex.y = (cos(jj*2*PI)*getParameterValueForPosition(scaleY, i)/2)+position.y;
@@ -873,6 +875,7 @@ private:
 	ofParameter<vector<float>> translateX, translateY;
 	ofParameter<vector<float>> scaleX, scaleY;
 	ofParameter<vector<float>> rotate;
+    ofParameter<float> overlap;
     
     ofParameter<bool> closed;
 	
