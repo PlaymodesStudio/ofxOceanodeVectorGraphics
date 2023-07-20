@@ -841,8 +841,8 @@ public:
 			ofPoint lastCreatedVertex = ofPoint(-100, -100);
 			ofPoint newVertex;
 			int counter = 0;
-			for(float j = 0 ; j < 1 ; j = j + (1.0/(float)getParameterValueForPosition(sides, i))){
-				float jj = j + getParameterValueForPosition(rotate, i);
+			for(int j = 0 ; j < (getParameterValueForPosition(sides, i) + closed) ; j++){
+				float jj = (j / (float)getParameterValueForPosition(sides, i)) + getParameterValueForPosition(rotate, i);
 				
 				newVertex.x = (sin(jj*2*PI)*getParameterValueForPosition(scaleX, i)/2)+position.x;
 				newVertex.y = (cos(jj*2*PI)*getParameterValueForPosition(scaleY, i)/2)+position.y;
@@ -862,18 +862,6 @@ public:
 					firstCreatedPoint = newVertex;
 				}
 			}
-			if(getParameterValueForPosition(toCenterFigure, i) != 0){
-				ofPoint middleVertex = (newVertex+firstCreatedPoint) / 2;
-				ofPoint toCenterPoint = (middleVertex * (1 - getParameterValueForPosition(toCenterFigure, i))) + (position * getParameterValueForPosition(toCenterFigure, i));
-				//ADD Point
-				x_temp.push_back(toCenterPoint.x);
-				y_temp.push_back(toCenterPoint.y);
-			}
-			//Close Shape
-            if(getParameterValueForPosition(sides, i) > 2 && closed){
-                x_temp.push_back(firstCreatedPoint.x);
-                y_temp.push_back(firstCreatedPoint.y);
-            }
 		}
 		yOut = y_temp;
         xOut = x_temp;
