@@ -489,12 +489,17 @@ public:
                     if(x->at(i) == -1){
                         if(withSpacing){
                             poly = poly.getResampledBySpacing(spacing);
+                            for(int j = 0; j < poly.size(); j++){
+                                x_tmp.push_back(poly[j].x);
+                                y_tmp.push_back(poly[j].y);
+                            }
                         }else{
-                            poly = poly.getResampledByCount(numPoints);
-                        }
-                        for(int j = 0; j < poly.size(); j++){
-                            x_tmp.push_back(poly[j].x);
-                            y_tmp.push_back(poly[j].y);
+                            float jump = 1.0f/ (numPoints-1);
+                            for (int j = 0; j < numPoints; j++) {
+                                auto p = poly.getPointAtPercent(min(j*jump, 0.99999f));
+                                x_tmp.push_back(p.x);
+                                y_tmp.push_back(p.y);
+                            }
                         }
                         x_tmp.push_back(-1);
                         y_tmp.push_back(-1);
@@ -506,13 +511,20 @@ public:
                 if(poly.size() != 0){
                     if(withSpacing){
                         poly = poly.getResampledBySpacing(spacing);
+                        for(int j = 0; j < poly.size(); j++){
+                            x_tmp.push_back(poly[j].x);
+                            y_tmp.push_back(poly[j].y);
+                        }
                     }else{
-                        poly = poly.getResampledByCount(numPoints);
+                        float jump = 1.0f/ (numPoints-1);
+                        for (int j = 0; j < numPoints; j++) {
+                            auto p = poly.getPointAtPercent(min(j*jump, 0.99999f));
+                            x_tmp.push_back(p.x);
+                            y_tmp.push_back(p.y);
+                        }
                     }
-                    for(int j = 0; j < poly.size(); j++){
-                        x_tmp.push_back(poly[j].x);
-                        y_tmp.push_back(poly[j].y);
-                    }
+                    x_tmp.push_back(-1);
+                    y_tmp.push_back(-1);
                 }
                 y_out = y_tmp;
                 x_out = x_tmp;
