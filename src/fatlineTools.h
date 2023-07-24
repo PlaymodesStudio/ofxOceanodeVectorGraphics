@@ -494,6 +494,7 @@ public:
                                 y_tmp.push_back(poly[j].y);
                             }
                         }else{
+                            //From: https://github.com/openframeworks/openFrameworks/issues/3557
                             float jump = 1.0f/ (numPoints-1);
                             for (int j = 0; j < numPoints; j++) {
                                 auto p = poly.getPointAtPercent(min(j*jump, 0.99999f));
