@@ -251,43 +251,70 @@ static void registerType(ofxOceanode &o){
 }
 static void registerScope(ofxOceanode &o){
     o.registerScope<ofPolyline>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
+        auto size2 = ImGui::GetContentRegionAvail();
+        bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+        if(keepAspectRatio)
+        {
+            if(size.y>size.x) size2.y = size2.x;
+            else size2.x = size.y;
+        }
+
         auto polylineVertices = p->cast<ofPolyline>().getParameter().get().getVertices();
         
         ImVec2 origin = ImGui::GetCursorScreenPos();
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         if(polylineVertices.size() > 1){
             for (int n = 0; n < polylineVertices.size() - 1; n++)
-                draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(255, 255, 0, 255), 2.0f);
+                draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size2.x), origin.y + (polylineVertices[n].y * size2.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size2.x), origin.y + (polylineVertices[n + 1].y * size2.y)), IM_COL32(255, 255, 0, 255), 2.0f);
         }
     });
     o.registerScope<vector<ofPath>>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
         auto polylines = p->cast<vector<ofPath>>().getParameter().get();
-        
+        auto size2 = ImGui::GetContentRegionAvail();
+        bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+        if(keepAspectRatio)
+        {
+            if(size.y>size.x) size2.y = size2.x;
+            else size2.x = size.y;
+        }
+
         for(auto p : polylines){
             auto polylineVertices = p.getOutline()[0].getVertices();
             ImVec2 origin = ImGui::GetCursorScreenPos();
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
             if(polylineVertices.size() > 1){
                 for (int n = 0; n < polylineVertices.size() - 1; n++)
-                    draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(p.getStrokeColor().r, p.getStrokeColor().g, p.getStrokeColor().b, p.getStrokeColor().a), p.getStrokeWidth());
+                    draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size2.x), origin.y + (polylineVertices[n].y * size2.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size2.x), origin.y + (polylineVertices[n + 1].y * size2.y)), IM_COL32(p.getStrokeColor().r, p.getStrokeColor().g, p.getStrokeColor().b, p.getStrokeColor().a), p.getStrokeWidth());
             }
         }
     });
-	o.registerScope<ofxFatLine>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
+	o.registerScope<ofxFatLine>([](ofxOceanodeAbstractParameter *p, ImVec2 size)
+    {
         auto polylineVertices = p->cast<ofxFatLine>().getParameter().get().getVertices();
-        
+        auto size2 = ImGui::GetContentRegionAvail();
+        bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+        if(keepAspectRatio)
+        {
+            if(size.y>size.x) size2.y = size2.x;
+            else size2.x = size.y;
+        }
+
         ImVec2 origin = ImGui::GetCursorScreenPos();
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         if(polylineVertices.size() > 1){
             for (int n = 0; n < polylineVertices.size() - 1; n++)
-                draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size.x), origin.y + (polylineVertices[n].y * size.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size.x), origin.y + (polylineVertices[n + 1].y * size.y)), IM_COL32(255, 255, 0, 255), 2.0f);
+                draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size2.x), origin.y + (polylineVertices[n].y * size2.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size2.x), origin.y + (polylineVertices[n + 1].y * size2.y)), IM_COL32(255, 255, 0, 255), 2.0f);
         }
     });
     o.registerScope<vector<ofxFatLine>>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
         auto polylines = p->cast<vector<ofxFatLine>>().getParameter().get();
-		
 		auto size2 = ImGui::GetContentRegionAvail();
-        
+        bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+        if(keepAspectRatio)
+        {
+            if(size.y>size.x) size2.y = size2.x;
+            else size2.x = size.y;
+        }
         for(auto p : polylines){
             auto polylineVertices = p.getVertices();
 			auto colors = p.getColors();
@@ -319,9 +346,29 @@ static void registerScope(ofxOceanode &o){
         }
     });
     o.registerScope<ofTexture*>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
+
         auto tex = p->cast<ofTexture*>().getParameter().get();
         auto size2 = ImGui::GetContentRegionAvail();
-
+        bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+        float sizeAspectRatio=size.x/size.y;
+        float texAspectRatio;
+        if(tex != nullptr){
+            texAspectRatio = tex->getWidth() / tex->getHeight();
+        }
+        if(keepAspectRatio)
+        {
+            if(sizeAspectRatio<texAspectRatio)
+            {
+                size2.y = size2.x / texAspectRatio;
+                size2.x = size.x;
+            }
+            else
+            {
+                size2.x = size2.y * texAspectRatio;
+                size2.y = size.y;
+            }
+        }
+        
         if(tex != nullptr){
             ImTextureID textureID = (ImTextureID)(uintptr_t)tex->texData.textureID;
             ImGui::Image(textureID, size2);
