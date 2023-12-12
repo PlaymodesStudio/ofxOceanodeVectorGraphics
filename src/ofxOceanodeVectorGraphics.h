@@ -248,6 +248,9 @@ static void registerType(ofxOceanode &o){
     o.registerType<vector<ofPath>>("v_Poly");
     o.registerType<ofxFatLine>("Fatline");
     o.registerType<vector<ofxFatLine>>("v_Fatline");
+#ifndef ofxOceanodeTextures_h
+    o.registerType<ofTexture*>("Texture");
+#endif
 }
 static void registerScope(ofxOceanode &o){
     o.registerScope<ofPolyline>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
@@ -345,6 +348,7 @@ static void registerScope(ofxOceanode &o){
             }
         }
     });
+#ifndef ofxOceanodeTextures_h
     o.registerScope<ofTexture*>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
 
         auto tex = p->cast<ofTexture*>().getParameter().get();
@@ -374,6 +378,7 @@ static void registerScope(ofxOceanode &o){
             ImGui::Image(textureID, size2);
         }
     });
+#endif
 }
 static void registerCollection(ofxOceanode &o){
     registerModels(o);
