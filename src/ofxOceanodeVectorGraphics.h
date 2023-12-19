@@ -343,8 +343,11 @@ static void registerScope(ofxOceanode &o){
             ImVec2 origin = ImGui::GetCursorScreenPos();
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
             if(polylineVertices.size() > 1){
-                for (int n = 0; n < polylineVertices.size() - 1; n++)
-					draw_list->AddLine(ImVec2(origin.x + (ofMap(polylineVertices[n].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n].y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(polylineVertices[n+1].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n+1].y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n].r*255, colors[n].g*255, colors[n].b*255, colors[n].a*255), p.getWeight(n));
+                for (int n = 0; n < polylineVertices.size() - 1; n++){
+                    glm::vec2 middlePoint = glm::mix(glm::vec2(polylineVertices[n].x, polylineVertices[n].y), glm::vec2(polylineVertices[n+1].x, polylineVertices[n+1].y), 0.5f);
+                    draw_list->AddLine(ImVec2(origin.x + (ofMap(polylineVertices[n].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n].y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(middlePoint.x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(middlePoint.y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n].r*255, colors[n].g*255, colors[n].b*255, colors[n].a*255), p.getWeight(n));
+                    draw_list->AddLine(ImVec2(origin.x + (ofMap(middlePoint.x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(middlePoint.y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(polylineVertices[n+1].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n+1].y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n+1].r*255, colors[n+1].g*255, colors[n+1].b*255, colors[n+1].a*255), p.getWeight(n+1));
+                }
             }
         }
     });
