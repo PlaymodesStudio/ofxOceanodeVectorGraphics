@@ -794,6 +794,7 @@ public:
         addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
 		
 		listeners.push(xIn.newListener([this](vector<float> &vf){
+            if(vf.size() > 0){
 			auto getValueForIndex = [](const vector<float> &vf, int i, int replicate, int numShapes) -> float{
 				if(vf.size() == replicate){
 					return vf[floor(i/numShapes)];
@@ -857,8 +858,8 @@ public:
                 yOut = y_tmp;
 				xOut = x_tmp;
 			}
-		}));
-		
+        }
+    }));
 	}
 	
 private:
