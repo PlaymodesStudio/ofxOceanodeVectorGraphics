@@ -774,6 +774,7 @@ public:
 	shapeTransform() : ofxOceanodeNodeModel("Shape Transform"){}
 	
 	void setup(){
+        
 		addParameter(xIn.set("X.In", {0.5}, {0}, {1}));
         addParameter(yIn.set("Y.In", {0.5}, {0}, {1}));
 		addParameter(replicate.set("Replicate", 1, 1, INT_MAX));
@@ -784,7 +785,9 @@ public:
 		addParameter(rotate.set("Rot", {0}, {0}, {1}));
 		addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
         addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
-		
+
+        addInspectorParameter(clampOutput.set("Clamp output", false));
+
 		listeners.push(xIn.newListener([this](vector<float> &vf){
             if(vf.size() > 0){
 			auto getValueForIndex = [](const vector<float> &vf, int i, int replicate, int numShapes) -> float{
@@ -839,8 +842,10 @@ public:
 							y_tmp[i] *= getValueForIndex(scaleY, shapeIndex, replicate, numShapes);
 							x_tmp[i] += 0.5 + ((getValueForIndex(translateX, shapeIndex, replicate, numShapes)-0.5));
 							y_tmp[i] += 0.5 + ((getValueForIndex(translateY, shapeIndex, replicate, numShapes)-0.5));
-							x_tmp[i] = ofClamp(x_tmp[i], 0, 1);
-							y_tmp[i] = ofClamp(y_tmp[i], 0, 1);
+                            if(clampOutput){
+                                x_tmp[i] = ofClamp(x_tmp[i], 0, 1);
+                                y_tmp[i] = ofClamp(y_tmp[i], 0, 1);
+                            }
 						}
 					}else{
 						x_tmp[i] = -1;
@@ -860,7 +865,8 @@ private:
 	ofParameter<vector<float>> translateX, translateY;
 	ofParameter<vector<float>> scaleX, scaleY;
 	ofParameter<vector<float>> rotate;
-	
+    ofParameter<bool> clampOutput;
+
 	vector<float> x_tmp, y_tmp;
 	ofParameter<vector<float>> xOut, yOut;
 
