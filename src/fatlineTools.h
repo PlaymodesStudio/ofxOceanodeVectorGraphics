@@ -22,11 +22,11 @@ public:
         addParameter(height.set("Height", 800, 1, 5000));
         addParameter(x.set("X", {0}, {0}, {1}));
         addParameter(y.set("Y", {0}, {0}, {1}));
-        addParameter(w.set("W", {0}, {0}, {20}));
-        addParameter(r.set("R", {0}, {0}, {1}));
-        addParameter(g.set("G", {0}, {0}, {1}));
-        addParameter(b.set("B", {0}, {0}, {1}));
-        addParameter(a.set("A", {0}, {0}, {1}));
+        addParameter(w.set("W", {1}, {0}, {20}));
+        addParameter(r.set("R", {1}, {0}, {1}));
+        addParameter(g.set("G", {1}, {0}, {1}));
+        addParameter(b.set("B", {1}, {0}, {1}));
+        addParameter(a.set("A", {1}, {0}, {1}));
         
         addParameter(output.set("Output", {ofxFatLine()}));
     }
