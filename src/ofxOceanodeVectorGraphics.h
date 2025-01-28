@@ -349,6 +349,15 @@ static void registerScope(ofxOceanode &o){
                     draw_list->AddLine(ImVec2(origin.x + (ofMap(middlePoint.x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(middlePoint.y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(polylineVertices[n+1].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n+1].y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n+1].r*255, colors[n+1].g*255, colors[n+1].b*255, colors[n+1].a*255), p.getWeight(n+1));
                 }
             }
+            else if(polylineVertices.size()==1)
+            {
+                //draw_list->AddCircle(ImVec2( X , Y,  RADIUS , ImGui::GetColorU32(ImGuiCol_Text));
+                draw_list->AddCircleFilled(ImVec2(origin.x + (ofMap(polylineVertices[0].x, minSize.x, maxSize.x, 0, size2.x)),
+                                     origin.y + (ofMap(polylineVertices[0].y, minSize.y, maxSize.y, 0, size2.y))),
+                                    5,
+                                    IM_COL32(colors[0].r*255, colors[0].g*255, colors[0].b*255, colors[0].a*255), 4);
+            }
+
         }
     });
 #ifndef ofxOceanodeTextures_h
