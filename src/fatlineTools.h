@@ -31,86 +31,89 @@ public:
         addParameter(output.set("Output", {ofxFatLine()}));
     }
     
-    void update(ofEventArgs &args){
-        bool close = false;
-        vector<vector<glm::vec3>> points;
-		int index = 0;
-        int maxSize = 0;
-        if(x->size() == y->size() && x->size() > 1) {
-			auto iterbegin = x->begin();
-			auto iterend = std::find(x->begin(), x->end(), -1);
-			int i = 0;
-			while (iterend != x->end()){
-				points.emplace_back();
-				points[i].resize(iterend - iterbegin);
-				int beginIndex = iterbegin - x->begin();
-				for(int j = 0; j < points[i].size(); j++){
-					points[i][j] = glm::vec3(x.get()[beginIndex+j] * width, y.get()[beginIndex+j] * height, 0);
-				}
-				iterbegin = iterend+1;
-				iterend = std::find(iterbegin, x->end(), -1);
-                if(points[i].size() > maxSize) maxSize = points[i].size();
-				i++;
-			}
-			points.emplace_back();
-			points[i].resize(iterend - iterbegin);
-			int beginIndex = iterbegin - x->begin();
-			for(int j = 0; j < points[i].size(); j++){
-				points[i][j] = glm::vec3(x.get()[beginIndex+j] * width, y.get()[beginIndex+j] * height, 0);
-			}
-			
-//            points.resize(close ? x->size() + 1 : x->size());
-//            for(int i = 0; i < points.size(); i++){
-//                points[i] = glm::vec3(x.get()[i] * width, y.get()[i] * height, 0);
-//            }
-//        }else if(x->size() > y->size()){
-//			points.resize(1);
-//            points[0].resize(close ? x->size() + 1 : x->size());
-//            for(int i = 0; i < points[0].size(); i++){
-//                points[0][i] = glm::vec3(x.get()[i] * width, y.get()[0] * height, 0);
-//            }
-//        }else if(x->size() < y->size()){
-//			points.resize(1);
-//            points[0].resize(close ? y->size() + 1 : y->size());
-//            for(int i = 0; i < points[0].size(); i++){
-//                points[0][i] = glm::vec3(x.get()[0] * width, y.get()[i] * height, 0);
-//            }
-        }
-		
-//		vector<double> doubleWeights;
-//        if(w->size() != points.size()){
-//            doubleWeights = (vector<double>(points.size(), w->at(0)));
-//        }else{
-//            doubleWeights = vector<double>(w->begin(), w->end());
-//        }
-		//if(points.back().size() == 0) points.pop_back();
+    void update(ofEventArgs &args) {
+        if(x->size() != y->size() || x->size() <= 1) return;
         
-        auto getFromVec = [](const vector<float> vf, int index) -> float{
-            if(vf.size()==0) return -1;
+        // Helper function to safely get values from vectors
+        auto getFromVec = [](const vector<float>& vf, int index) -> float {
+            if(vf.size() == 0) return -1;
             if(index < vf.size()) return vf[index];
             return vf[0];
         };
         
-		vector<ofxFatLine> fatlines(points.size());
-		
-		int accumPosition = 0;
-		for(int i = 0 ; i < points.size(); i++){
-			vector<ofFloatColor> colors;
-			colors.resize(points[i].size());
-			for(int j = 0; j < points[i].size(); j++){
-				colors[j].set(getFromVec(r, accumPosition+j), getFromVec(g, accumPosition+j), getFromVec(b, accumPosition+j), getFromVec(a, accumPosition+j));
-			}
-			vector<double> doubleWeights;
-			doubleWeights.resize(points[i].size());
-			for(int j = 0; j < points[i].size(); j++){
-				doubleWeights[j] = getFromVec(w, accumPosition+j);
-			}
-			
-			fatlines[i].add(points[i], colors, doubleWeights);
-			accumPosition += maxSize;
-		}
-		output.set(fatlines);
-	}
+        // Pre-calculate sizes
+        const size_t inputSize = x->size();
+        const auto& xData = x.get();
+        const auto& yData = y.get();
+        
+        // Count number of shapes and max size
+        size_t numShapes = 1;
+        size_t maxShapeSize = 0;
+        size_t currentShapeSize = 0;
+        
+        for(size_t i = 0; i < inputSize; ++i) {
+            if(xData[i] == -1) {
+                numShapes++;
+                maxShapeSize = std::max(maxShapeSize, currentShapeSize);
+                currentShapeSize = 0;
+            } else {
+                currentShapeSize++;
+            }
+        }
+        maxShapeSize = std::max(maxShapeSize, currentShapeSize);
+        
+        // Pre-allocate vectors
+        vector<ofxFatLine> fatlines(numShapes);
+        vector<glm::vec3> points;
+        points.reserve(maxShapeSize);
+        
+        // Process shapes
+        size_t shapeIndex = 0;
+        size_t accumPosition = 0;
+        
+        auto processShape = [&](size_t start, size_t end) {
+            points.clear();
+            points.reserve(end - start +1);
+            
+            // Build points for current shape
+            for(size_t j = start; j <= end; ++j) {
+                points.emplace_back(xData[j] * width, yData[j] * height, 0);
+            }
+            
+            // Process colors and weights once per shape
+            vector<ofFloatColor> colors(points.size());
+            vector<double> weights(points.size());
+            
+            for(size_t j = 0; j < points.size(); ++j) {
+                colors[j].set(
+                              getFromVec(r.get(), accumPosition + j),
+                              getFromVec(g.get(), accumPosition + j),
+                              getFromVec(b.get(), accumPosition + j),
+                              getFromVec(a.get(), accumPosition + j)
+                              );
+                weights[j] = getFromVec(w.get(), accumPosition + j);
+            }
+            
+            fatlines[shapeIndex].add(points, colors, weights);
+            accumPosition += maxShapeSize;
+            shapeIndex++;
+        };
+        
+        // Process all shapes
+        size_t start = 0;
+        for(size_t i = 0; i < inputSize; ++i) {
+            if(xData[i] == -1){
+                processShape(start, i-1);
+                start = i + 1;
+            }
+            if(i == inputSize - 1) {
+                processShape(start, i);
+                start = i + 1;
+            }
+        }
+        
+        output.set(fatlines);
+    }
     
 private:
     
