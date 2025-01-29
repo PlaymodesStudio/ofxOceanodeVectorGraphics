@@ -242,6 +242,7 @@ static void registerModels(ofxOceanode &o){
     o.registerModel<pointAtPercent>("Vector Graphics");
     o.registerModel<shapeFeather>("Vector Graphics");
     o.registerModel<shapeLength>("Vector Graphics");
+    o.registerModel<borderMask>("Border Mask");
 }
 static void registerType(ofxOceanode &o){
     o.registerType<ofPolyline>("Polyline");
