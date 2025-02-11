@@ -899,54 +899,58 @@ public:
 	}
 	
 	void update(ofEventArgs &a){
-		int numElements = max({sides->size(),
-								toCenterFigure->size(),
-								translateX->size(),
-								translateY->size(),
-								scaleX->size(),
-								scaleY->size(),
-								rotate->size()
-		});
-		
-		vector<float> x_temp;
-		vector<float> y_temp;
-		for(int i = 0 ; i < numElements; i++){
-			if(i != 0){
-				x_temp.push_back(-1);
-				y_temp.push_back(-1);
-			}
+		if(translateX.get().size()!=0 && translateY.get().size()!=0 && scaleX.get().size()!=0 && scaleY.get().size()!=0 && rotate.get().size()!=0 )
+		{
+			int numElements = max({sides->size(),
+									toCenterFigure->size(),
+									translateX->size(),
+									translateY->size(),
+									scaleX->size(),
+									scaleY->size(),
+									rotate->size()
+			});
 			
-			ofPoint position;
-			position.x = getParameterValueForPosition(translateX, i);
-			position.y = getParameterValueForPosition(translateY, i);
-			ofPoint firstCreatedPoint = ofPoint(-100, -100);
-			ofPoint lastCreatedVertex = ofPoint(-100, -100);
-			ofPoint newVertex;
-			int counter = 0;
-			for(int j = 0 ; j < (getParameterValueForPosition(sides, i) + closed) ; j++){
-				float jj = ((j * overlap) / (float)getParameterValueForPosition(sides, i)) + getParameterValueForPosition(rotate, i);
-				
-				newVertex.x = (sin(jj*2*PI)*getParameterValueForPosition(scaleX, i)/2)+position.x;
-				newVertex.y = (cos(jj*2*PI)*getParameterValueForPosition(scaleY, i)/2)+position.y;
-				if(j != 0 && getParameterValueForPosition(toCenterFigure, i) != 0){
-					ofPoint middleVertex = (newVertex+lastCreatedVertex) / 2;
-					ofPoint toCenterPoint = (middleVertex * (1 - getParameterValueForPosition(toCenterFigure, i))) + (position * getParameterValueForPosition(toCenterFigure, i));
-					//ADD Point
-					x_temp.push_back(toCenterPoint.x);
-					y_temp.push_back(toCenterPoint.y);
+			vector<float> x_temp;
+			vector<float> y_temp;
+			for(int i = 0 ; i < numElements; i++){
+				if(i != 0){
+					x_temp.push_back(-1);
+					y_temp.push_back(-1);
 				}
-				//ADD Point
-				x_temp.push_back(newVertex.x);
-				y_temp.push_back(newVertex.y);
 				
-				lastCreatedVertex = newVertex;
-				if(j == 0){
-					firstCreatedPoint = newVertex;
+				ofPoint position;
+				position.x = getParameterValueForPosition(translateX, i);
+				position.y = getParameterValueForPosition(translateY, i);
+				ofPoint firstCreatedPoint = ofPoint(-100, -100);
+				ofPoint lastCreatedVertex = ofPoint(-100, -100);
+				ofPoint newVertex;
+				int counter = 0;
+				for(int j = 0 ; j < (getParameterValueForPosition(sides, i) + closed) ; j++){
+					float jj = ((j * overlap) / (float)getParameterValueForPosition(sides, i)) + getParameterValueForPosition(rotate, i);
+					
+					newVertex.x = (sin(jj*2*PI)*getParameterValueForPosition(scaleX, i)/2)+position.x;
+					newVertex.y = (cos(jj*2*PI)*getParameterValueForPosition(scaleY, i)/2)+position.y;
+					if(j != 0 && getParameterValueForPosition(toCenterFigure, i) != 0){
+						ofPoint middleVertex = (newVertex+lastCreatedVertex) / 2;
+						ofPoint toCenterPoint = (middleVertex * (1 - getParameterValueForPosition(toCenterFigure, i))) + (position * getParameterValueForPosition(toCenterFigure, i));
+						//ADD Point
+						x_temp.push_back(toCenterPoint.x);
+						y_temp.push_back(toCenterPoint.y);
+					}
+					//ADD Point
+					x_temp.push_back(newVertex.x);
+					y_temp.push_back(newVertex.y);
+					
+					lastCreatedVertex = newVertex;
+					if(j == 0){
+						firstCreatedPoint = newVertex;
+					}
 				}
 			}
+			yOut = y_temp;
+			xOut = x_temp;
+
 		}
-		yOut = y_temp;
-        xOut = x_temp;
 	}
 	
 private:
