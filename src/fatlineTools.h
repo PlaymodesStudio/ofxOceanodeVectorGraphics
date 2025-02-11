@@ -343,14 +343,16 @@ public:
                     if(ImGui::IsKeyPressed(ImGuiKey_Tab)){
                         pointDraggingIndex = (pointDraggingIndex + 1) % points.size();
                     }
-                    
-                    if(points[pointDraggingIndex].x>1.0) points[pointDraggingIndex].x=1.0;
-                    if(points[pointDraggingIndex].x<0.0) points[pointDraggingIndex].x=0.0;
-                    if(points[pointDraggingIndex].y>1.0) points[pointDraggingIndex].y=1.0;
-                    if(points[pointDraggingIndex].y<0.0) points[pointDraggingIndex].y=0.0;
-                    
-                    mouseY = normPos.y;
-                    mouseX = normPos.x;
+                    if(pointDraggingIndex!=-1)
+					{
+						if(points[pointDraggingIndex].x>1.0) points[pointDraggingIndex].x=1.0;
+						if(points[pointDraggingIndex].x<0.0) points[pointDraggingIndex].x=0.0;
+						if(points[pointDraggingIndex].y>1.0) points[pointDraggingIndex].y=1.0;
+						if(points[pointDraggingIndex].y<0.0) points[pointDraggingIndex].y=0.0;
+						
+						mouseY = normPos.y;
+						mouseX = normPos.x;
+					}
                 }
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 vector<float> x_t(points.size());
