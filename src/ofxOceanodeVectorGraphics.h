@@ -348,7 +348,19 @@ static void registerScope(ofxOceanode &o){
                     glm::vec2 middlePoint = glm::mix(glm::vec2(polylineVertices[n].x, polylineVertices[n].y), glm::vec2(polylineVertices[n+1].x, polylineVertices[n+1].y), 0.5f);
                     draw_list->AddLine(ImVec2(origin.x + (ofMap(polylineVertices[n].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n].y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(middlePoint.x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(middlePoint.y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n].r*255, colors[n].g*255, colors[n].b*255, colors[n].a*255), p.getWeight(n));
                     draw_list->AddLine(ImVec2(origin.x + (ofMap(middlePoint.x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(middlePoint.y, minSize.y, maxSize.y, 0, size2.y))), ImVec2(origin.x + (ofMap(polylineVertices[n+1].x, minSize.x, maxSize.x, 0, size2.x)), origin.y + (ofMap(polylineVertices[n+1].y, minSize.y, maxSize.y, 0, size2.y))), IM_COL32(colors[n+1].r*255, colors[n+1].g*255, colors[n+1].b*255, colors[n+1].a*255), p.getWeight(n+1));
+					
+					// draw circle for each vertex
+					draw_list->AddCircleFilled(ImVec2(origin.x + (ofMap(polylineVertices[n].x, minSize.x, maxSize.x, 0, size2.x)),
+										 origin.y + (ofMap(polylineVertices[n].y, minSize.y, maxSize.y, 0, size2.y))),
+										5,
+										IM_COL32(colors[n].r*255, colors[n].g*255, colors[n].b*255, colors[n].a*255), 4);
                 }
+				// draw circle for last vertex
+				int lastVertex = polylineVertices.size()-1;
+				draw_list->AddCircleFilled(ImVec2(origin.x + (ofMap(polylineVertices[lastVertex].x, minSize.x, maxSize.x, 0, size2.x)),
+									 origin.y + (ofMap(polylineVertices[lastVertex].y, minSize.y, maxSize.y, 0, size2.y))),
+									5,
+									IM_COL32(colors[lastVertex].r*255, colors[lastVertex].g*255, colors[lastVertex].b*255, colors[lastVertex].a*255), 4);
             }
             else if(polylineVertices.size()==1)
             {
