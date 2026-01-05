@@ -27,7 +27,7 @@ public:
         addParameter(g.set("G", {1}, {0}, {1}));
         addParameter(b.set("B", {1}, {0}, {1}));
         addParameter(a.set("A", {1}, {0}, {1}));
-        
+		addParameter(opacity.set("Opacity",1.0,0.0,1.0));
         addParameter(output.set("Output", {ofxFatLine()}));
     }
     
@@ -86,10 +86,10 @@ public:
             
             for(size_t j = 0; j < points.size(); ++j) {
                 colors[j].set(
-                              getFromVec(r.get(), accumPosition + j),
-                              getFromVec(g.get(), accumPosition + j),
-                              getFromVec(b.get(), accumPosition + j),
-                              getFromVec(a.get(), accumPosition + j)
+                              getFromVec(r.get(), accumPosition + j)*opacity,
+                              getFromVec(g.get(), accumPosition + j)*opacity,
+                              getFromVec(b.get(), accumPosition + j)*opacity,
+                              getFromVec(a.get(), accumPosition + j)*opacity
                               );
                 weights[j] = getFromVec(w.get(), accumPosition + j);
             }
@@ -124,6 +124,7 @@ private:
     ofParameter<vector<float>> g;
     ofParameter<vector<float>> b;
     ofParameter<vector<float>> a;
+	ofParameter<float> opacity;
     ofParameter<int> width, height;
     ofParameter<vector<ofxFatLine>> output;
     
