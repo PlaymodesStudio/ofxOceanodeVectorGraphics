@@ -102,7 +102,7 @@ public:
         // Process all shapes
         size_t start = 0;
         for(size_t i = 0; i < inputSize; ++i) {
-            if(xData[i] == -1){
+            if((xData[i] == -1)&&(i!=0)){
                 processShape(start, i-1);
                 start = i + 1;
             }
