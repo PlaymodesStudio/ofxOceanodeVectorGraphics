@@ -183,10 +183,23 @@ private:
                 float minX = 0.0f;
                 float minY = 0.0f;
 
+                // ofxSvg gives every filled shape OF_POLY_WINDING_NONZERO, and
+                // for any winding mode but ODD, ofPath::getOutline() returns the
+                // tessellated *stroke* contour -- which ofPath::tessellate()
+                // only ever fills in when strokeWidth > 0. Asking a fill-only
+                // shape for its outline therefore yields nothing at all, and
+                // every object would report a corner of 0,0.
+                //
+                // A copy switched to ODD returns the flattened path geometry
+                // instead. Winding mode only selects a fill rule, and this copy
+                // is never drawn, so the SVG still renders exactly as before.
+                ofPath geometry = svg.getPathAt(pathIndex);
+                geometry.setPolyWindingMode(OF_POLY_WINDING_ODD);
+
                 // Vertices rather than getBoundingBox(): an empty polyline's
                 // box is a zero-sized rect at the origin, which would drag the
                 // corner to 0,0. Iterating skips those for free.
-                for (const ofPolyline &outline : svg.getPathAt(pathIndex).getOutline()) {
+                for (const ofPolyline &outline : geometry.getOutline()) {
                     for (const auto &vertex : outline) {
                         minX = hasGeometry ? std::min(minX, vertex.x) : vertex.x;
                         minY = hasGeometry ? std::min(minY, vertex.y) : vertex.y;
