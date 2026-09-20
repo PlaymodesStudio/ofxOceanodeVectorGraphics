@@ -10,6 +10,7 @@
 
 #include "fourierEpicyles.h"
 #include "svgTools.h"
+#include "svg2Texture.h"
 #include "fatlineTools.h"
 
 #include "ofxOceanode.h"
@@ -223,6 +224,7 @@ static void registerModels(ofxOceanode &o){
     o.registerModel<fatlineRenderer>("Vector Graphics");
     o.registerModel<fourierShape>("Vector Graphics");
 	o.registerModel<inverseFourierShape>("Vector Graphics");
+	o.registerModel<svg2Texture>("Vector Graphics");
     o.registerModel<svgModulator>("Vector Graphics");
 	o.registerModel<polylineGenerator>("Vector Graphics");
 	o.registerModel<polylineRenderer>("Vector Graphics");
