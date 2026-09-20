@@ -33,6 +33,7 @@
 #include "shapeFeather.h"
 #include "shapeLength.h"
 #include "borderMask.h"
+#include "svg2Texture.h"
 
 namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
@@ -60,6 +61,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<shapeFeather>("Vector Graphics");
 	o.registerModel<shapeLength>("Vector Graphics");
 	o.registerModel<borderMask>("Border Mask");
+	o.registerModel<svg2Texture>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
 	o.registerType<ofPolyline>("Polyline");
