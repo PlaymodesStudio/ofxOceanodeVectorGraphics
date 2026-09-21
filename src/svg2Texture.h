@@ -22,6 +22,8 @@ public:
         addParameter(opacity.set("Opacity", {1.0f}, {0.0f}, {1.0f}));
         addParameter(x.set("X", {0.0f}, {-FLT_MAX}, {FLT_MAX}));
         addParameter(y.set("Y", {0.0f}, {-FLT_MAX}, {FLT_MAX}));
+        addParameterDropdown(bboxCorner, "Bounding Box Corner", 0,
+                             {"Top Left", "Top Right", "Bottom Right", "Bottom Left"});
 
         addOutputParameter(output.set("Texture", nullptr));
         addOutputParameter(numObjects.set("numObjects", 0));
@@ -47,6 +49,9 @@ public:
         }));
         listeners.push(y.newListener([this](vector<float> &) {
             render();
+        }));
+        listeners.push(bboxCorner.newListener([this](int &) {
+            updateObjectOrigins();
         }));
     }
 
@@ -137,6 +142,7 @@ public:
 private:
     ofParameter<string> filename;
     ofParameter<int> width, height;
+    ofParameter<int> bboxCorner;
     ofParameter<vector<float>> opacity, x, y;
     ofParameter<ofTexture*> output;
     ofParameter<int> numObjects;
@@ -182,6 +188,8 @@ private:
                 bool hasGeometry = false;
                 float minX = 0.0f;
                 float minY = 0.0f;
+                float maxX = 0.0f;
+                float maxY = 0.0f;
 
                 // ofxSvg gives every filled shape OF_POLY_WINDING_NONZERO, and
                 // for any winding mode but ODD, ofPath::getOutline() returns the
@@ -203,14 +211,22 @@ private:
                     for (const auto &vertex : outline) {
                         minX = hasGeometry ? std::min(minX, vertex.x) : vertex.x;
                         minY = hasGeometry ? std::min(minY, vertex.y) : vertex.y;
+                        maxX = hasGeometry ? std::max(maxX, vertex.x) : vertex.x;
+                        maxY = hasGeometry ? std::max(maxY, vertex.y) : vertex.y;
                         hasGeometry = true;
                     }
                 }
 
                 // A path with no drawable geometry still takes a slot, so every
                 // output stays aligned with numObjects and with Opacity/X/Y.
-                originsX.push_back(hasGeometry ? minX / svgWidth : 0.0f);
-                originsY.push_back(hasGeometry ? minY / svgHeight : 0.0f);
+                if (hasGeometry) {
+                    const int corner = bboxCorner.get();
+                    originsX.push_back((corner == 1 || corner == 2 ? maxX : minX) / svgWidth);
+                    originsY.push_back((corner == 2 || corner == 3 ? maxY : minY) / svgHeight);
+                } else {
+                    originsX.push_back(0.0f);
+                    originsY.push_back(0.0f);
+                }
             }
         }
 
