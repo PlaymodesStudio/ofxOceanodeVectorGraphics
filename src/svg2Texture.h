@@ -25,6 +25,8 @@ public:
 
         addOutputParameter(output.set("Texture", nullptr));
         addOutputParameter(numObjects.set("numObjects", 0));
+        addOutputParameter(xOut.set("X.Out", {0.0f}, {0.0f}, {1.0f}));
+        addOutputParameter(yOut.set("Y.Out", {0.0f}, {0.0f}, {1.0f}));
 
         addInspectorParameter(embed.set("Embed", false));
 
@@ -128,6 +130,8 @@ public:
         svgLoaded = false;
         output = nullptr;
         numObjects = 0;
+        xOut = vector<float>();
+        yOut = vector<float>();
     }
 
 private:
@@ -136,6 +140,7 @@ private:
     ofParameter<vector<float>> opacity, x, y;
     ofParameter<ofTexture*> output;
     ofParameter<int> numObjects;
+    ofParameter<vector<float>> xOut, yOut;
     ofParameter<bool> embed;
     customGuiRegion loadButton;
 
@@ -152,6 +157,65 @@ private:
         if (values.empty()) return fallback;
         if (values.size() == 1 || index >= values.size()) return values.front();
         return values[index];
+    }
+
+    // Top-left corner of each object's bounding box, in the SVG's own
+    // coordinate space normalized 0-1 by the document size. Deliberately
+    // independent of the X/Y inputs and of Width/Height, so it describes the
+    // layout of the file rather than where an object currently ends up in the
+    // texture -- which also means X.Out can feed X without a feedback loop.
+    //
+    // Index order matches the Opacity/X/Y vectors: the object order in the
+    // source SVG, which is the reverse of the order ofxSvg exposes paths in.
+    void updateObjectOrigins() {
+        vector<float> originsX, originsY;
+        const int count = numObjects;
+        const float svgWidth = svg.getWidth();
+        const float svgHeight = svg.getHeight();
+
+        if (svgLoaded && count > 0 && svgWidth > 0.0f && svgHeight > 0.0f) {
+            originsX.reserve(static_cast<size_t>(count));
+            originsY.reserve(static_cast<size_t>(count));
+
+            for (int i = 0; i < count; ++i) {
+                const int pathIndex = count - 1 - i;
+                bool hasGeometry = false;
+                float minX = 0.0f;
+                float minY = 0.0f;
+
+                // ofxSvg gives every filled shape OF_POLY_WINDING_NONZERO, and
+                // for any winding mode but ODD, ofPath::getOutline() returns the
+                // tessellated *stroke* contour -- which ofPath::tessellate()
+                // only ever fills in when strokeWidth > 0. Asking a fill-only
+                // shape for its outline therefore yields nothing at all, and
+                // every object would report a corner of 0,0.
+                //
+                // A copy switched to ODD returns the flattened path geometry
+                // instead. Winding mode only selects a fill rule, and this copy
+                // is never drawn, so the SVG still renders exactly as before.
+                ofPath geometry = svg.getPathAt(pathIndex);
+                geometry.setPolyWindingMode(OF_POLY_WINDING_ODD);
+
+                // Vertices rather than getBoundingBox(): an empty polyline's
+                // box is a zero-sized rect at the origin, which would drag the
+                // corner to 0,0. Iterating skips those for free.
+                for (const ofPolyline &outline : geometry.getOutline()) {
+                    for (const auto &vertex : outline) {
+                        minX = hasGeometry ? std::min(minX, vertex.x) : vertex.x;
+                        minY = hasGeometry ? std::min(minY, vertex.y) : vertex.y;
+                        hasGeometry = true;
+                    }
+                }
+
+                // A path with no drawable geometry still takes a slot, so every
+                // output stays aligned with numObjects and with Opacity/X/Y.
+                originsX.push_back(hasGeometry ? minX / svgWidth : 0.0f);
+                originsY.push_back(hasGeometry ? minY / svgHeight : 0.0f);
+            }
+        }
+
+        xOut = originsX;
+        yOut = originsY;
     }
 
     struct CssStyle {
@@ -232,6 +296,7 @@ private:
             svgLoaded = false;
             numObjects = 0;
             output = nullptr;
+            updateObjectOrigins();
             return;
         }
 
@@ -243,6 +308,7 @@ private:
             svgLoaded = false;
             numObjects = 0;
             output = nullptr;
+            updateObjectOrigins();
             return;
         }
 
@@ -285,6 +351,7 @@ private:
             width = std::max(1, static_cast<int>(std::round(svg.getWidth())));
             height = std::max(1, static_cast<int>(std::round(svg.getHeight())));
         }
+        updateObjectOrigins();
         render();
     }
 
