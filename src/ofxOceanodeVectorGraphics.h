@@ -34,12 +34,14 @@
 #include "shapeLength.h"
 #include "borderMask.h"
 #include "svg2Texture.h"
+#include "vectorPrimitives.h"
 
 namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
-	o.registerModel<fatlineGenerator>("Vector Graphics");
-	o.registerModel<fatlineRenderer>("Vector Graphics");
-	o.registerModel<fourierShape>("Vector Graphics");
+    o.registerModel<fatlineGenerator>("Vector Graphics");
+	//o.registerModel<fatlineGenerator2>("Vector Graphics");
+    o.registerModel<fatlineRenderer>("Vector Graphics");
+    o.registerModel<fourierShape>("Vector Graphics");
 	o.registerModel<inverseFourierShape>("Vector Graphics");
 	o.registerModel<svgModulator>("Vector Graphics");
 	o.registerModel<polylineGenerator>("Vector Graphics");
@@ -62,6 +64,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<shapeLength>("Vector Graphics");
 	o.registerModel<borderMask>("Border Mask");
 	o.registerModel<svg2Texture>("Vector Graphics");
+	o.registerModel<vectorPrimitives>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
 	o.registerType<ofPolyline>("Polyline");
