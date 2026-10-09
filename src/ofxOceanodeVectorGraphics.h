@@ -36,6 +36,13 @@
 #include "svg2Texture.h"
 #include "vectorPrimitives.h"
 
+#include "barMaker.h"
+#include "generativeGrid.h"
+#include "generativeGrid2.h"
+#include "pathMaker.h"
+#include "trimGroupPaths.h"
+#include "trimPathSequential.h"
+
 namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
     o.registerModel<fatlineGenerator>("Vector Graphics");
@@ -65,6 +72,12 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<borderMask>("Border Mask");
 	o.registerModel<svg2Texture>("Vector Graphics");
 	o.registerModel<vectorPrimitives>("Vector Graphics");
+	o.registerModel<barMaker>("Vector Graphics");
+	o.registerModel<generativeGrid>("Vector Graphics");
+	o.registerModel<generativeGrid2>("Vector Graphics");
+	o.registerModel<pathMaker>("Vector Graphics");
+	o.registerModel<trimGroupPaths>("Vector Graphics");
+	o.registerModel<trimPathSequential>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
 	o.registerType<ofPolyline>("Polyline");
