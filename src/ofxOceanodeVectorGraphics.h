@@ -14,7 +14,7 @@
 #include "svgTools.h"
 #include "polylineGenerator.h"
 #include "polylineRenderer.h"
-#include "remove-1.h"
+//#include "remove-1.h"
 #include "fatlineGenerator.h"
 #include "fatlineRenderer.h"
 #include "manualPoints.h"
@@ -62,7 +62,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<shapeTransform>("Vector Graphics");
 	o.registerModel<polygonCreator>("Vector Graphics");
 	o.registerModel<pointMatrix>("Vector Graphics");
-	o.registerModel<removeZeros>("Vector Graphics");
+	//o.registerModel<removeZeros>("Vector Graphics");
 	o.registerModel<bezierCurve>("Vector Graphics");
 	o.registerModel<radialModulation>("Vector Graphics");
 	o.registerModel<shapeInterpolator>("Vector Graphics");
