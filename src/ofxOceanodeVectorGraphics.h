@@ -12,6 +12,7 @@
 
 #include "fourierEpicyles.h"
 #include "svgTools.h"
+#include "svgPolylineLoader.h"
 #include "polylineGenerator.h"
 #include "polylineRenderer.h"
 //#include "remove-1.h"
@@ -51,6 +52,7 @@ static void registerModels(ofxOceanode &o){
     o.registerModel<fourierShape>("Vector Graphics");
 	o.registerModel<inverseFourierShape>("Vector Graphics");
 	o.registerModel<svgModulator>("Vector Graphics");
+	o.registerModel<svgPolylineLoader>("Vector Graphics");
 	o.registerModel<polylineGenerator>("Vector Graphics");
 	o.registerModel<polylineRenderer>("Vector Graphics");
 	o.registerModel<manualPoints>("Vector Graphics");
