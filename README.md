@@ -1,5 +1,18 @@
 # ofxOceanodeVectorGraphics
 
+## Trim Paths Pro
+
+Available under **Vector Graphics → Trim Paths Pro**. Combines local edge trimming,
+per-path reveals, whole-input sequencing and overlapping visual groups. Start,
+End and Origin map independently; Origin shifts the trim with wrapping, and
+progress can use edge count or distance. Existing trim nodes remain available
+for older patches.
+
+See [Trim Paths Pro usage and vector mapping](docs/trim_paths_pro.md) for examples,
+output formats, group editing and legacy equivalents. Run
+`python3 tests/trim_paths_pro_regression.py` on macOS with compiled sibling OF
+libraries, or add `--core-only` for the standalone geometry regressions.
+
 ## SVG Polyline Loader
 
 Available under **Vector Graphics → SVG Polyline Loader**. The existing SVG

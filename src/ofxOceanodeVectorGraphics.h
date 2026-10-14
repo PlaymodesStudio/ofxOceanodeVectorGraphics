@@ -43,6 +43,7 @@
 #include "pathMaker.h"
 #include "trimGroupPaths.h"
 #include "trimPathSequential.h"
+#include "trimPathsPro.h"
 
 namespace ofxOceanodeVectorGraphics{
 static void registerModels(ofxOceanode &o){
@@ -80,6 +81,7 @@ static void registerModels(ofxOceanode &o){
 	o.registerModel<pathMaker>("Vector Graphics");
 	o.registerModel<trimGroupPaths>("Vector Graphics");
 	o.registerModel<trimPathSequential>("Vector Graphics");
+	o.registerModel<trimPathsPro>("Vector Graphics");
 }
 static void registerType(ofxOceanode &o){
 	o.registerType<ofPolyline>("Polyline");
