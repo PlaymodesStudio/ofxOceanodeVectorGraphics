@@ -32,7 +32,11 @@ public:
     }
     
     void update(ofEventArgs &args) {
-        if(x->size() != y->size() || x->size() <= 1) return;
+        if(x->size() != y->size() || x->size() <= 1) {
+            // Publish the absence of geometry instead of retaining the last valid lines.
+            if(!output.get().empty()) output.set(vector<ofxFatLine>{});
+            return;
+        }
         
         // Helper function to safely get values from vectors
         auto getFromVec = [](const vector<float>& vf, int index) -> float {
