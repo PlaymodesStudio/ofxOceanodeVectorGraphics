@@ -18,6 +18,7 @@
 //#include "remove-1.h"
 #include "fatlineGenerator.h"
 #include "fatlineRenderer.h"
+#include "MacroMixerFatline.h"
 #include "manualPoints.h"
 #include "pointsResamplerIndex.h"
 #include "pointsResampler.h"
@@ -89,7 +90,7 @@ static void registerType(ofxOceanode &o){
 	o.registerType<ofPolyline>("Polyline");
 	o.registerType<vector<ofPath>>("v_Poly");
 	o.registerType<ofxFatLine>("Fatline");
-	o.registerType<vector<ofxFatLine>>("v_Fatline");
+	o.registerType<vector<ofxFatLine>>("v_Fatline", {}, fatlineMixingDefinition());
 #ifndef ofxOceanodeTextures_h
 	o.registerType<ofTexture*>("Texture");
 #endif
