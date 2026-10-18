@@ -95,6 +95,36 @@ static void registerType(ofxOceanode &o){
 	o.registerType<ofTexture*>("Texture");
 #endif
 }
+// Fatlines use a square coordinate space. Share the texture Scope toggle workflow.
+static ImVec2 fatlineScopeSize(ofxOceanodeAbstractParameter* parameter, ImVec2 size){
+    size.x = std::max(0.0f, size.x);
+    size.y = std::max(0.0f, size.y);
+    if(parameter->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio){
+        size.x = size.y = std::min(size.x, size.y);
+    }
+    return size;
+}
+
+static void drawFatlineScopeAspectToggle(ofxOceanodeAbstractParameter* parameter, ImVec2 size){
+    const ImVec2 origin = ImGui::GetCursorPos();
+    const bool keepAspectRatio = parameter->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio;
+    ImGui::SetCursorPos(ImVec2(origin.x + std::max(0.0f, size.x - 20.0f), origin.y + 5.0f));
+    ImGui::PushStyleColor(ImGuiCol_Text, keepAspectRatio
+        ? ImVec4(1.0f, 0.5f, 0.0f, 0.5f) : ImVec4(0.55f, 0.55f, 0.55f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0,0,0,0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0,0,0,0));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2,2));
+    if(ImGui::Button("[]##KeepAspectRatioNode")){
+        parameter->setFlags(parameter->getFlags() ^ ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
+    }
+    if(ImGui::IsItemHovered()) ImGui::SetTooltip("Keep aspect ratio");
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(4);
+    ImGui::SetCursorPos(origin);
+    ImGui::Dummy(size);
+}
+
 static void registerScope(ofxOceanode &o){
 	//-------------------------------------------------------------------------------------------- polyline
 	o.registerScope<ofPolyline>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
@@ -139,13 +169,7 @@ static void registerScope(ofxOceanode &o){
 	//-------------------------------------------------------------------------------------------- fatline
 	o.registerScope<ofxFatLine>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
 		auto polylineVertices = p->cast<ofxFatLine>().getParameter().get().getVertices();
-		auto size2 = ImGui::GetContentRegionAvail();
-		bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
-		if(keepAspectRatio)
-		{
-			if(size.y>size.x) size2.y = size2.x;
-			else size2.x = size.y;
-		}
+		const ImVec2 size2 = fatlineScopeSize(p, size);
 		
 		ImVec2 origin = ImGui::GetCursorScreenPos();
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -153,17 +177,12 @@ static void registerScope(ofxOceanode &o){
 			for (int n = 0; n < polylineVertices.size() - 1; n++)
 				draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size2.x), origin.y + (polylineVertices[n].y * size2.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size2.x), origin.y + (polylineVertices[n + 1].y * size2.y)), IM_COL32(255, 255, 0, 255), 2.0f);
 		}
+        drawFatlineScopeAspectToggle(p, size2);
 	});
 	//-------------------------------------------------------------------------------------------- vector fatline
 	o.registerScope<vector<ofxFatLine>>([](ofxOceanodeAbstractParameter *p, ImVec2 size){
 		auto polylines = p->cast<vector<ofxFatLine>>().getParameter().get();
-		auto size2 = ImGui::GetContentRegionAvail();
-		bool keepAspectRatio = (p->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio);
-		if(keepAspectRatio)
-		{
-			if(size.y>size.x) size2.y = size2.x;
-			else size2.x = size.y;
-		}
+		const ImVec2 size2 = fatlineScopeSize(p, size);
 		for(auto p : polylines){
 			auto polylineVertices = p.getVertices();
 			auto colors = p.getColors();
@@ -217,6 +236,7 @@ static void registerScope(ofxOceanode &o){
 			}
 			
 		}
+        drawFatlineScopeAspectToggle(p, size2);
 	});
 	
 #ifndef ofxOceanodeTextures_h
