@@ -1,5 +1,72 @@
 # ofxOceanodeVectorGraphics
 
+## Body Repulsion
+
+Available under **Vector Graphics → Body Repulsion**. Body points retain their
+positions and velocities as Force points push them away, with smooth repulsion
+inside each point's fear radius. A spring pulls each point toward its current
+incoming Body position, and damping settles the motion. All inputs and controls
+are sampled on every node update, so momentum continues without input changes.
+
+| Parameter | Meaning |
+| --- | --- |
+| `Body_X`, `Body_Y` | Paired vectors of moving spring rest positions. |
+| `Force_X`, `Force_Y` | Paired vectors of repeller positions; each Body point reacts to all of them. |
+| `Strength` | Per-Force repulsion multiplier, default 1. Zero disables a repeller, 0.5 halves its force, and values above 1 amplify it. One value broadcasts; shorter vectors repeat their last value, excluding Force separators. Empty, negative or nonfinite values disable the corresponding repulsion. |
+| `FearDistance` | Radius in coordinate units; default 0.15. One value broadcasts. Multiple values map to Body points, excluding separators; a shorter vector repeats its last value. Empty, negative or nonfinite fear values disable repulsion for the corresponding points. |
+| `Repulsion Strength` | Per-Body push strength, default 40. Higher values produce a faster escape. |
+| `Return Strength` | Per-Body spring stiffness, default 8. Lower values give a looser shape; zero allows free drift. |
+| `Damping` | Per-Body momentum decay, default 3. Lower values allow longer drifting and more spring oscillation; zero removes drag. |
+| `Reset` | Restore current Body coordinates and clear momentum on the next update. |
+| `Out_X`, `Out_Y` | Paired simulated positions, with no canvas clamping. |
+
+All vector controls accept a float connection or a one-value vector: that value
+applies to every corresponding point, preserving the original scalar behavior.
+FearDistance, Repulsion Strength, Return Strength and Damping map to Body points;
+Strength maps to Force points. Path separators do not consume control values.
+Shorter control vectors repeat their last value; excess values are ignored.
+Empty, negative or nonfinite control values act as zero. Repulsion Strength and
+Return Strength are bounded to 0–1000 per point, and Damping to 0–100. Changing
+any of these vectors during motion preserves existing positions and velocities.
+
+For a gentle floating response, start with Repulsion Strength 40, Return Strength
+4 and Damping 2. For a quicker, calmer recovery, try Return Strength 12 and
+Damping 7. Both coordinate sets must use the same space. With normalized 0–1
+coordinates, FearDistance 0.15 is 15% of one coordinate axis; use equally scaled
+X and Y coordinates for circular influence in the rendered image.
+
+Repulsion is evaluated at the **simulated** position, with a squared falloff to
+zero at the fear boundary. Each contribution is multiplied by its Force point's
+Strength and the Body point's Repulsion Strength. Control changes take effect on the
+next update, preserving existing momentum. Multiple forces add; opposing contributions can
+cancel. Points have unit mass and move independently; this does not implement
+point-to-point collisions or a connected soft-body mesh. Incoming Body changes
+move the spring targets smoothly rather than overwriting simulated positions.
+At exact overlap a deterministic escape direction avoids undefined normalization;
+identical points with identical fear values remain together.
+
+Paired `-1` values are preserved as path separators and never simulated. The
+coordinate value `-1` is reserved by the addon's path protocol. Empty, mismatched,
+nonfinite, or incorrectly separated Body input clears outputs and simulation
+state. Mismatched Force vectors provide no repulsion; invalid Force points are
+ignored while spring motion and inertia continue. State is tracked by input
+index. A point count or separator-layout change resets the whole simulation;
+reordering equally sized vectors changes the spring targets at those indices.
+Loading presets and resetting Oceanode's global phase also reset momentum.
+
+The CPU implementation uses fixed 1/240-second substeps and processes at most
+0.1 seconds of host time per update, dropping excess time after a long stall.
+It checks every Body/Force pair per substep; large point sets may need a future
+spatial index or GPU backend. Only controls and inputs persist in presets,
+not simulated velocities. When either coordinate output changes, both vectors
+are staged before events and Y is notified before X.
+
+Run `python3 tests/body_repulsion_regression.py` on macOS with compiled sibling
+openFrameworks libraries, or add `--core-only` for standalone physics checks.
+The runtime adapter uses real OF parameters/events and Oceanode float-to-vector
+connections, with a supplied frame clock, simulated node registration and unused
+GUI teardown. Visual tuning still needs a rebuilt host app.
+
 ## Trim Paths Pro
 
 Available under **Vector Graphics → Trim Paths Pro**. Combines local edge trimming,

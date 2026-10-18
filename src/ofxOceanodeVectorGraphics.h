@@ -29,6 +29,7 @@
 #include "pointMatrix.h"
 #include "bezierCurve.h"
 #include "radialModulation.h"
+#include "bodyRepulsion.h"
 #include "shapeInterpolator.h"
 #include "pointAtPercent.h"
 #include "shapeFeather.h"
@@ -68,6 +69,7 @@ static void registerModels(ofxOceanode &o){
 	//o.registerModel<removeZeros>("Vector Graphics");
 	o.registerModel<bezierCurve>("Vector Graphics");
 	o.registerModel<radialModulation>("Vector Graphics");
+	o.registerModel<bodyRepulsion>("Vector Graphics");
 	o.registerModel<shapeInterpolator>("Vector Graphics");
 	o.registerModel<pointAtPercent>("Vector Graphics");
 	o.registerModel<shapeFeather>("Vector Graphics");

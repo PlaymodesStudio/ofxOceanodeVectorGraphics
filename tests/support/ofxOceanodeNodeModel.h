@@ -14,6 +14,8 @@ public:
     virtual void presetSave(ofJson&) {}
     virtual void presetRecallBeforeSettingParameters(ofJson&) {}
     virtual void presetRecallAfterSettingParameters(ofJson&) {}
+    virtual void presetHasLoaded() {}
+    virtual void resetPhase() {}
     int getNumIdentifier() const { return 0; }
     template<class T> void addParameter(ofParameter<T>& p) { parameters_[p.getName()] = &p; }
     template<class T> void addOutputParameter(ofParameter<T>& p) { addParameter(p); }
