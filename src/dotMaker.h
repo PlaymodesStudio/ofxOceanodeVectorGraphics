@@ -17,8 +17,8 @@ public:
 	void setup(){
 		addParameter(x.set("X", {0.5}, {0}, {1}));
         addParameter(y.set("Y", {0.5}, {0}, {1}));
-		addParameter(x_out.set("X_out", {0.5}, {0}, {1}));
-        addParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
+		addOutputParameter(x_out.set("X_out", {0.5}, {0}, {1}));
+        addOutputParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
 		
 		listeners.push(x.newListener([this](vector<float> &vf){
 			//generateDots();
