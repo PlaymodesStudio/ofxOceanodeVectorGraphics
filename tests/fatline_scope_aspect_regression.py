@@ -26,6 +26,8 @@ void frame(){
     fitted=fatlineScopeSize(&parameter,available);
     const ImVec2 origin=ImGui::GetCursorScreenPos();
     button=origin+ImVec2(std::max(0.f,fitted.x-20)+8,13);
+    auto* drawList=ImGui::GetWindowDrawList();const int vertices=drawList->VtxBuffer.Size;
+    drawScopeBorder(origin,origin+fitted);assert(drawList->VtxBuffer.Size>vertices);
     drawFatlineScopeAspectToggle(&parameter,fitted);
     assert(ImGui::GetCursorScreenPos().y>=origin.y+fitted.y);
     ImGui::End();ImGui::Render();
@@ -47,11 +49,12 @@ int main(){
 }
 '''
 def main():
-    source=(ROOT/'src/ofxOceanodeVectorGraphics.h').read_text()
-    helpers=source[source.index('static ImVec2 fatlineScopeSize('):source.index('static void registerScope(')]
+    source=(ROOT/'src/ofxOceanodeVectorGraphics.cpp').read_text()
+    helpers=source[source.index('static ImVec2 fatlineScopeSize('):source.index('void registerScope(ofxOceanode &o, bool withTexture)')]
     for registration in ('o.registerScope<ofxFatLine>','o.registerScope<vector<ofxFatLine>>'):
         start=source.index(registration);end=source.index('\n\t});',start)
         assert 'fatlineScopeSize(p, size)' in source[start:end]
+        assert 'drawScopeBorder(' in source[start:end]
         assert 'drawFatlineScopeAspectToggle(p, size2)' in source[start:end]
     with tempfile.TemporaryDirectory(prefix='fatline-scope-') as directory:
         work=Path(directory);(work/'imconfig.h').write_text('')

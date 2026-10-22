@@ -104,6 +104,11 @@ static ImVec2 fatlineScopeSize(ofxOceanodeAbstractParameter* parameter, ImVec2 s
     return size;
 }
 
+// Outline the drawing area so the scope's coordinate bounds stay visible.
+static void drawScopeBorder(ImVec2 min, ImVec2 max){
+    ImGui::GetWindowDrawList()->AddRect(min, max, IM_COL32(0, 0, 0, 255));
+}
+
 static void drawFatlineScopeAspectToggle(ofxOceanodeAbstractParameter* parameter, ImVec2 size){
     const ImVec2 origin = ImGui::GetCursorPos();
     const bool keepAspectRatio = parameter->getFlags() & ofxOceanodeParameterFlags_ScopeKeepAspectRatio;
@@ -176,6 +181,7 @@ void registerScope(ofxOceanode &o, bool withTexture){
 			for (int n = 0; n < polylineVertices.size() - 1; n++)
 				draw_list->AddLine(ImVec2(origin.x + (polylineVertices[n].x * size2.x), origin.y + (polylineVertices[n].y * size2.y)), ImVec2(origin.x + (polylineVertices[n + 1].x * size2.x), origin.y + (polylineVertices[n + 1].y * size2.y)), IM_COL32(255, 255, 0, 255), 2.0f);
 		}
+        drawScopeBorder(origin, ImVec2(origin.x + size2.x, origin.y + size2.y));
         drawFatlineScopeAspectToggle(p, size2);
 	});
 	//-------------------------------------------------------------------------------------------- vector fatline
@@ -235,6 +241,9 @@ void registerScope(ofxOceanode &o, bool withTexture){
 			}
 			
 		}
+		// Lines are drawn through the draw list, so the cursor is still at the scope origin.
+		const ImVec2 scopeOrigin = ImGui::GetCursorScreenPos();
+        drawScopeBorder(scopeOrigin, ImVec2(scopeOrigin.x + size2.x, scopeOrigin.y + size2.y));
         drawFatlineScopeAspectToggle(p, size2);
 	});
 	
@@ -266,6 +275,7 @@ void registerScope(ofxOceanode &o, bool withTexture){
 		if(tex != nullptr){
 			ImTextureID textureID = (ImTextureID)(uintptr_t)tex->texData.textureID;
 			ImGui::Image(textureID, size2);
+			drawScopeBorder(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 		}
 	});
 	}
