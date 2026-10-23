@@ -130,3 +130,159 @@ Run `python3 tests/svg_polyline_loader_regression.py` on macOS with compiled
 sibling openFrameworks libraries. It syntax-checks the addon and runs real SVG
 parsing/geometry tests with ASan/UBSan; node registration and the native dialog
 are simulated in the runtime fixture. The native UI still needs a host-app check.
+
+## Wave It
+
+Available under **Vector Graphics → Wave It**. Deforms any XY contour along its
+local perpendicular, including MetaballsV3, SVG outlines and generated paths.
+
+| Parameter | Meaning |
+| --- | --- |
+| `In.X`, `In.Y` | Equally sized coordinate vectors, with paired `-1` path separators. |
+| `Wave In` | Normalized waveform. `0.5` is neutral, `0` gives negative Amount and `1` gives positive Amount. Default `[0.5]`; a singleton applies a constant offset. |
+| `Amount` | Vector of target displacement amplitudes in coordinate units, default `[0.05]`, range −1…1. Negative values invert the wave locally; zero targets the original contour. |
+| `Response` | `Direct` (default) follows the target immediately. `Spring` follows with inertia and mild, decaying overshoot. |
+| `Stiffness` | Vector of spring strengths, default `[40]`, range 0–1000. Higher values respond faster; lower values move more softly. Zero holds the current normal offset and clears its velocity. Ignored in Direct mode. |
+| `Motion Influence` | Vector of input-motion coupling strengths, default `[0]`, range 0–1. Zero preserves the original wave-only behaviour; one gives full normal-direction coupling. Active only in Spring with positive Stiffness. |
+| `Out.X`, `Out.Y` | Deformed coordinates with the same vertex count, ordering, separators and closure as the input. No canvas clamping. |
+
+Wave In, Amount, Stiffness and Motion Influence each restart their entire vector for every separate
+path, including holes. Each vector may have a different length; single values
+broadcast everywhere, and float connections work as single-value vectors. Samples are
+linearly interpolated by normalized **distance along the original contour**;
+uneven vertex spacing therefore does not compress or stretch local wave cycles.
+The geometry itself is not resampled. A 1000-sample sine buffer containing three
+cycles produces three ripples around each closed shape, evaluated at its existing
+vertices. Use enough input vertices to resolve the waveform; this node does not
+add detail beyond the input geometry.
+
+Closed paths are detected by an exactly repeated first/last coordinate. They
+sample Wave In as a periodic buffer, including interpolation from the final sample
+back to the first. Supply periodic samples without duplicating the wave endpoint
+(e.g. `0.5 + 0.5*sin(2*pi*3*i/1000)`, for `i=0…999`). The repeated geometry endpoint
+always gets exactly the first point's deformed position. Positive displacement
+points outward for simple closed shapes, independent of winding. Each hole is
+handled independently, so positive displacement enlarges its outline too.
+
+Open paths retain open endpoints and use the first/last wave samples at their
+start/end. Their positive normal is `(-tangent.y, tangent.x)`; reversing the path
+reverses that side. Normals use the average of adjacent unit edge directions,
+with one-sided normals at open endpoints. Adjacent duplicate vertices share one
+position and normal. Isolated points and zero-length paths remain unchanged;
+reversing cusps use the outgoing direction. Self-intersecting loops have no
+unambiguous inside/outside, and large offsets may create intersections. Wave It
+does not repair or recompute contour topology.
+
+Empty Wave In or Amount targets zero deformation. Wave samples are clamped to
+0–1; nonfinite samples act as 0.5. Empty/nonfinite Amount, Stiffness and Motion Influence samples
+act as zero; finite values are bounded to their displayed ranges. Invalid, nonfinite or mismatched XY
+pairs clear both outputs. The coordinate value `-1` is reserved by the addon's
+path protocol; avoid deformations that place real coordinates exactly at `-1`.
+
+All input edits are batched for the next node update, including Wave In, Amount,
+Stiffness and Motion Influence changes while geometry is stationary. Both outputs are staged before
+notifications, with Y notified before X. Direct skips work on clean updates;
+Spring advances on every update, even with unchanged inputs.
+
+Spring simulates a **scalar normal displacement** at each vertex; the original
+input geometry remains its moving rest shape. The local target is
+`(2 * Wave In - 1) * Amount`. Stiffness changes response speed, not the final
+amplitude. Springs have unit mass and a fixed damping ratio of 0.65, giving a
+small overshoot that settles. There is no neighbour coupling or membrane tension.
+Amount is a target amplitude; inertia can temporarily carry displacement beyond it.
+With motion excitation disabled or the input stationary, zero Amount or neutral
+Wave In returns gradually to the base contour in Spring mode (provided Stiffness
+is positive). An Amount envelope can therefore localize
+ripples; a Stiffness envelope makes some regions react faster than others.
+
+**Motion Influence** couples movement of the incoming geometry into the spring.
+At each vertex, input movement since the last update is projected onto the current
+normal. Positive coupling creates lag behind that movement, followed by a damped
+rebound when it stops. Tangential movement does not excite the normal spring.
+The wave target and motion forcing combine independently: motion works with
+Wave In `[0.5]` or Amount `[0]`, and its deformation is not capped by Amount.
+This remains a normal-displacement effect, not full XY particle inertia.
+
+Try **Response Spring**, **Stiffness `[40]`**, **Motion Influence `[0.5]`** and a
+neutral Wave In, then translate the incoming circle and stop it. Try a Motion
+Influence vector such as `[0, 1, 0, 1]` to vary the response around each loop.
+Zero Stiffness still holds the current offset and ignores motion. Setting Motion
+Influence back to zero stops new excitation; existing spring motion settles.
+
+Motion history is rebased on startup, preset/phase reset, invalid geometry,
+topology changes and entry into Spring mode. Input positions are tracked even
+with influence zero, so enabling it cannot replay old movement. Invalid, zero,
+very short (at most one microsecond) or longer-than-0.1-second frame intervals
+also rebase motion without excitation. Ordinary coordinate jumps with stable
+vertex layout are treated as motion, including teleports and upstream index
+reordering; use a reset or disable influence during intentional discontinuities.
+
+The spring uses an exact damped solution for the target and normal held over each
+frame, with input motion treated as constant velocity during that interval.
+At most 0.1 seconds of elapsed host time is processed per update; excess time
+following a long stall is dropped. Switching to Direct immediately applies the
+current target and clears velocity; switching from Direct to Spring starts at
+the last Direct displacement. A newly created Spring starts at zero displacement.
+Loading a preset or resetting global phase clears all spring motion.
+
+Changing point count, separator layout, closure or adjacent-duplicate layout
+resets spring offsets and velocities to zero, then advances the new geometry.
+Otherwise state follows vertex indices, including while coordinates move. Equal-size
+shape reordering or a changed contour starting point cannot be identified as new
+geometry. This is not persistent shape tracking across Metaballs splits/merges.
+
+Connect **MetaballsV3 Contours X/Y → Wave It In.X/In.Y**, then connect a normalized
+sine bank to **Wave In** and start with **Amount `[0.03]`**. For an elastic
+response, select **Spring** and try **Stiffness `[40]`**; try `[5, 80, 5, 80]`
+for alternating soft and fast regions around a loop. Connect Out.X/Out.Y to the
+same downstream path generator or renderer that previously received the contours.
+
+Run `python3 tests/wave_it_regression.py` for geometry, spring motion,
+frame-rate consistency, motion lag/rebound, vector controls, scalar connections
+and real OF event checks
+with ASan/UBSan plus addon registration syntax validation. `--core-only` runs the
+standalone geometry checks. Visual verification requires rebuilding the host app.
+
+## Wave Pro
+
+Available under **Vector Graphics → Wave Pro**. Ripples any XY contour along its
+local normal, and can treat the contour as an elastic membrane, so ripples travel
+along the body, ring and settle. It has the same intent as Wave It but its own
+physics model.
+
+| Parameter | Scope | Meaning |
+| --- | --- | --- |
+| `Bypass` | — | Passes the input through unchanged. Toggling it resets the membrane, so the effect restarts at rest on the wave. |
+| `In.X`, `In.Y` | — | Contour points, paired `-1` separators between shapes. |
+| `Wave In` | per shape | Normalized wave (0.5 neutral) stretched from the start to the end of every shape, resampled by arc length onto its vertices. Closed shapes read it periodically. |
+| `Wave Offset` | one value per shape | Scrolls the wave along the shape (1 = a full perimeter). Values cycle across shapes, so `[0, 0.5]` puts alternate shapes in antiphase. |
+| `Wave Repeat` | one value per shape | Tiles the wave N times around the shape. Non-integer values leave a seam on closed shapes. |
+| `Distribute` | — | `Per Shape` (default): every shape reads the whole Wave In. `By Length`: the `Wave Cycles` contained in Wave In are shared out between shapes in whole cycles, in proportion to their perimeters, so every blob gets a similar wavelength and each loop closes on a whole cycle. Every shape gets at least one cycle when there are enough; with fewer cycles than shapes, the smallest get none and stay flat. All shapes together read Wave In exactly once. Shares are kept from frame to frame (blobs matched by position) until a shape's fair share is 3/4 of a cycle away, so a slowly growing blob does not flicker between two counts; when it does change, the pattern on that blob and its partner changes in one step. Merges and splits recompute the shares. |
+| `Wave Cycles` | — | By Length only: how many cycles your Wave In contains, default `1` (e.g. `16` for a 1024-sample buffer drawing 16 sine cycles). Cycle boundaries should fall on whole buffer positions for seamless loops. |
+| `Anchor` | — | Where closed shapes start reading the wave; Stable and Tracked always run clockwise on screen, whatever the input's direction. `Tracked` (default): follows the body from frame to frame. Last frame's start point is moved with the shape (centre translation, plus rotation of its long axis when it is elongated) and snapped to the nearest point on the new outline, so it never hops when a worm bends, curls or turns. New shapes start at their right side. `Stable`: recomputed every frame where a +X ray from the shape's centre leaves the outline; this can hop when the body bends so that the ray misses it or crosses it several times. `Path Start`: follow the input order; use it when the start point is meaningful. Open paths always follow the input order. |
+| `Resample` | — | Default `512`. Rebuilds every shape with this many evenly spaced points (closed shapes start at the anchor and keep their closing point); `0` keeps the input points. Needed for contours whose points slide along the outline every frame (MetaballsV3): otherwise each wave feature, especially square-wave corners, snaps from point to point and the shape shimmers. It also keeps the point count steady, so Spring state survives. Output point count = Resample (+1 closing point on closed shapes). |
+| `Amount` | along perimeter | Displacement for wave 0/1, in coordinate units. |
+| `Normal Smooth` | along perimeter | Default `0.05`. Averages normals over a window (fraction of perimeter), which calms spikes at sharp corners and cusps. |
+| `Response` | — | `Direct` follows the wave exactly. `Spring` simulates the membrane. |
+| `Stiffness` | along perimeter | Pull toward the wave. Higher responds faster. `0` is plastic: nothing pulls back, so dents from motion stay (with Propagation they spread out and even out). |
+| `Damping` | along perimeter | Damping ratio. `0` rings forever, `1` settles without overshoot, `>1` is sluggish. It also calms ripples travelling along the outline, more strongly the finer they are. |
+| `Propagation` | along perimeter | Ripple speed along the contour, in perimeters per second. Disturbances (from motion or from changing the wave) travel around the body; the wave itself is never flattened. `0` means each point is independent. |
+| `Motion Influence` | along perimeter | Inertia of the membrane against the body's own acceleration: it is pressed in while the body speeds up, bulges forward when it brakes, sloshes on turns and bulges outward when it spins. Constant-speed travel causes no deformation. Body motion is measured on the whole shape (centre and long axis), so outline noise is not amplified. |
+
+Every "along perimeter" vector is resampled by arc length on each shape
+independently; a single value broadcasts. The membrane is solved implicitly
+(Newmark average acceleration with a cyclic tridiagonal solve per shape), so it
+is unconditionally stable, does not lose energy numerically, and is substepped
+for accuracy at low frame rates. Tension acts on the deviation from the wave, so
+the outline rests exactly on it. The membrane starts at rest on the wave, and
+restarts there on reset, preset load, Bypass or a change of vertex layout (for
+example when metaballs merge or split). As a safety stop, the deviation from the
+wave is limited to half the body's size.
+
+Ideas to try: Spring, Stiffness `[5]`, Damping `[0.1]`, Propagation `[0.5]`, then
+pulse Amount: the shape rings and waves chase each other around it. Or Motion
+Influence `[1]`, Stiffness `[20]`, Damping `[0.3]`, Propagation `[1]` on moving
+metaballs, for jelly. Very low Damping with high Propagation makes fast, busy
+ripples; Stiffness `0` with strong Motion Influence soon reaches the safety stop.
+
+Run `python3 tests/wave_pro_regression.py` (or `--core-only`).
