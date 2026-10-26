@@ -20,7 +20,7 @@ public:
         addParameter(affectAlpha.set("Alpha?", true));
         addParameter(maskPosition.set("Mask Pos", 0.0625, 0, 0.5)); // 0.0625 = 50/800 normalized
         addParameter(maskWidth.set("Mask Width", 0.025, 0, 0.5));  // 0.025 = 20/800 normalized
-        addParameter(output.set("Output", {ofxFatLine()}));
+        addOutputParameter(output.set("Output", {ofxFatLine()}));
         
         listener = input.newListener([this](vector<ofxFatLine> &lines){
             if(maskPosition!=0.0)

@@ -28,7 +28,7 @@ public:
         addParameter(b.set("B", {1}, {0}, {1}));
         addParameter(a.set("A", {1}, {0}, {1}));
 		addParameter(opacity.set("Opacity",1.0,0.0,1.0));
-        addParameter(output.set("Output", {ofxFatLine()}));
+        addOutputParameter(output.set("Output", {ofxFatLine()}));
     }
     
     void update(ofEventArgs &args) {

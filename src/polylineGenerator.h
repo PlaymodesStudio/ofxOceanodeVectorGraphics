@@ -27,7 +27,7 @@ public:
         addParameter(fb.set("FillB", {0}, {0}, {1}));
         addParameter(fa.set("FillA", {0}, {0}, {1}));
         
-        addParameter(output.set("Output", {ofPath()}));
+        addOutputParameter(output.set("Output", {ofPath()}));
     }
     
     void update(ofEventArgs &args){

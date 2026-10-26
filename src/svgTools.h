@@ -18,9 +18,9 @@ public:
     
     void setup(){
         addParameter(filename.set("File", ""));
-        addParameter(width.set("Width", 100, 1, 5000), ofxOceanodeParameterFlags_DisableSavePreset);
-        addParameter(height.set("Height", 100, 1, 5000), ofxOceanodeParameterFlags_DisableSavePreset);
-        addParameter(sizes.set("Sizes", {0}, {0}, {INT_MAX}));
+        addOutputParameter(width.set("Width", 100, 1, 5000), ofxOceanodeParameterFlags_DisableSavePreset);
+        addOutputParameter(height.set("Height", 100, 1, 5000), ofxOceanodeParameterFlags_DisableSavePreset);
+        addOutputParameter(sizes.set("Sizes", {0}, {0}, {INT_MAX}));
         addOutputParameter(x_out.set("X.Out", {0.5}, {0}, {1}));
         addOutputParameter(y_out.set("Y.Out", {0.5}, {0}, {1}));
 

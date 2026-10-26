@@ -23,8 +23,8 @@ public:
         addParameter(amount.set("Amnt", {0}, {0}, {1}));
         addParameter(xCenter.set("X.Center", {0.5}, {0}, {1}));
         addParameter(yCenter.set("Y.Center", {0.5}, {0}, {1}));
-        addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
-        addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
+        addOutputParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
+        addOutputParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
         
         addInspectorParameter(modulateType.set("Type ? radial : rotational", false));
         

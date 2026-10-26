@@ -19,8 +19,8 @@ public:
         addParameter(freq.set("Freq", {1}, {-10000}, {10000}));
         addParameter(size.set("Size", {0.5}, {0}, {1}));
         addParameter(phase.set("Phase", {0}, {0}, {1}));
-        addParameter(xOutput.set("X", {0}, {0}, {1}));
-        addParameter(yOutput.set("Y", {0}, {0}, {1}));
+        addOutputParameter(xOutput.set("X", {0}, {0}, {1}));
+        addOutputParameter(yOutput.set("Y", {0}, {0}, {1}));
     }
     
     void update(ofEventArgs &a){
@@ -61,9 +61,9 @@ public:
 	void setup(){
 		addParameter(x.set("X", {0}, {0}, {1}));
         addParameter(y.set("Y", {0}, {0}, {1}));
-		addParameter(freq.set("Freq", {1}, {-10000}, {10000}));
-        addParameter(amp.set("Size", {0.5}, {0}, {1}));
-        addParameter(phase.set("Phase", {0}, {0}, {1}));
+		addOutputParameter(freq.set("Freq", {1}, {-10000}, {10000}));
+        addOutputParameter(amp.set("Size", {0.5}, {0}, {1}));
+        addOutputParameter(phase.set("Phase", {0}, {0}, {1}));
 	}
 	
 	void update(ofEventArgs &a){

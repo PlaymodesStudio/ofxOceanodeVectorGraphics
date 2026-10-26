@@ -20,9 +20,9 @@ public:
         addParameter(numPoints.set("Num", {100}, {1}, {INT_MAX}));
         addParameter(withSpacing.set("Use Spa", false));
         addParameter(spacing.set("Spacing", 0.1, 0, 1));
-        addParameter(x_out.set("X_out", {0.5}, {0}, {1}));
-        addParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
-        addParameter(index_out.set("Index_out", {0}, {0}, {INT_MAX}));
+        addOutputParameter(x_out.set("X_out", {0.5}, {0}, {1}));
+        addOutputParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
+        addOutputParameter(index_out.set("Index_out", {0}, {0}, {INT_MAX}));
         
         listeners.push(x.newListener([this](vector<float> &vf){
             if(x->size() == y->size()){

@@ -19,7 +19,7 @@ public:
         addParameter(width.set("Width", 100, 1, INT_MAX));
         addParameter(height.set("Height", 100, 1, INT_MAX));
         addParameter(texture.set("Tex", nullptr));
-        addParameter(output.set("Output", nullptr));
+        addOutputParameter(output.set("Output", nullptr));
         
         inputref->addReceiveFunc<vector<ofxFatLine>>([this](vector<ofxFatLine> const &fl){
             inputFat.clear();

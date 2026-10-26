@@ -19,7 +19,7 @@ public:
         addParameter(input.set("Input", {ofxFatLine()}));
         addParameter(width.set("Width", 100, 1, 5000));
         addParameter(height.set("Height", 100, 1, 5000));
-        addParameter(output.set("Output", nullptr));
+        addOutputParameter(output.set("Output", nullptr));
         //screenSize = glm::vec2(100, 100);
     }
     

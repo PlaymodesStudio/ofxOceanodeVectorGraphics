@@ -19,8 +19,8 @@ public:
         addParameter(yStart.set("Y.Start", {0.5}, {0}, {1}));
 		addParameter(xEnd.set("X.End", {0.5}, {0}, {1}));
         addParameter(yEnd.set("Y.End", {0.5}, {0}, {1}));
-		addParameter(x_out.set("X.Out", {0.5}, {0}, {1}));
-        addParameter(y_out.set("Y.Out", {0.5}, {0}, {1}));
+		addOutputParameter(x_out.set("X.Out", {0.5}, {0}, {1}));
+        addOutputParameter(y_out.set("Y.Out", {0.5}, {0}, {1}));
 		
 		listeners.push(xStart.newListener([this](vector<float> &vf){
 			if((xStart->size() == yStart->size()) &&  (xStart->size() == xEnd->size()) && (xStart->size() == yEnd->size())){

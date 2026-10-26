@@ -18,8 +18,8 @@ public:
     void setup() override{
         addParameter(sizeX.set("width", 10, 1, 1000));
         addParameter(sizeY.set("height", 10, 1, 1000));
-		addParameter(x.set("X", {0.5}, {0}, {1}));
-		addParameter(y.set("Y", {0.5}, {0}, {1}));
+		addOutputParameter(x.set("X", {0.5}, {0}, {1}));
+		addOutputParameter(y.set("Y", {0.5}, {0}, {1}));
         
         listeners.push(sizeX.newListener([this](int &i){
             calcOutput();

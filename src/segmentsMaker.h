@@ -19,9 +19,9 @@ public:
         addParameter(y.set("Y", {0.5}, {0}, {1}));
 		addParameter(allSegments.set("All", false));
 		addParameter(numVertex.set("Vertex", 2, 2, INT_MAX));
-		addParameter(numSegments.set("Num", 1, 1, INT_MAX));
-		addParameter(x_out.set("X_out", {0.5}, {0}, {1}));
-        addParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
+		addOutputParameter(numSegments.set("Num", 1, 1, INT_MAX));
+		addOutputParameter(x_out.set("X_out", {0.5}, {0}, {1}));
+        addOutputParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
 		
 		listeners.push(x.newListener([this](vector<float> &vf){
 			if(x->size() == y->size()){

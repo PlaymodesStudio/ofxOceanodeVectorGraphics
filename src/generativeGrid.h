@@ -13,8 +13,8 @@ public:
 		addParameter(shapeSizeY.set("ShapeSizeY", {1}, {1}, {10}));
 		addParameter(offsetX.set("OffsetX", {0}, {-1}, {1}));
 		addParameter(offsetY.set("OffsetY", {0}, {-1}, {1}));
-		addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
-		addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
+		addOutputParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
+		addOutputParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
 		
 		// Listen to parameter changes
 		listeners.push(cellsX.newListener([this](int &i){ calculate(); }));

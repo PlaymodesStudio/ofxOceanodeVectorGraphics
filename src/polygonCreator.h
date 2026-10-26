@@ -27,8 +27,8 @@ public:
 		addParameter(scaleX.set("X.Scale", {1}, {0}, {2}));
 		addParameter(scaleY.set("Y.Scale", {1}, {0}, {2}));
 		addParameter(rotate.set("Rot", {0}, {0}, {1}));
-		addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
-        addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
+		addOutputParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
+        addOutputParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
         
         addInspectorParameter(overlap.set("Overlap", 1, 0, FLT_MAX));
 	}

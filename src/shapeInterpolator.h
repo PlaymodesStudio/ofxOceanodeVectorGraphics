@@ -20,8 +20,8 @@ public:
         addParameter(xB.set("X.b", {0.5}, {0}, {1}));
         addParameter(yB.set("Y.b", {0.5}, {0}, {1}));
         addParameter(interp.set("Interp", 0, 0, 1));
-        addParameter(x_out.set("X_out", {0.5}, {0}, {1}));
-        addParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
+        addOutputParameter(x_out.set("X_out", {0.5}, {0}, {1}));
+        addOutputParameter(y_out.set("Y_out", {0.5}, {0}, {1}));
         
         listeners.push(xA.newListener([this](vector<float> &vf){
             if(xA->size() > 1 && xB->size() > 1 && xA->size() == yA->size() && xB->size() == yB->size()){

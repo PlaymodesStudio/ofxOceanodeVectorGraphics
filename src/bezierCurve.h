@@ -19,8 +19,8 @@ public:
         addParameter(yIn.set("Y.In", {0.5}, {0}, {1}));
         addParameter(resolution.set("Res", 15, 1, INT_MAX));
         addParameter(close.set("Close", {1}, {0}, {1}));
-        addParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
-        addParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
+        addOutputParameter(xOut.set("X.Out", {0.5}, {0}, {1}));
+        addOutputParameter(yOut.set("Y.Out", {0.5}, {0}, {1}));
         
         listeners.push(xIn.newListener([this](vector<float> &vf){
             if(xIn->size() == yIn->size()){
