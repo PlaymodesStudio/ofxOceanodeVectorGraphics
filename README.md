@@ -67,6 +67,60 @@ The runtime adapter uses real OF parameters/events and Oceanode float-to-vector
 connections, with a supplied frame clock, simulated node registration and unused
 GUI teardown. Visual tuning still needs a rebuilt host app.
 
+## TwoBody Repulsion
+
+Available under **Vector Graphics → TwoBody Repulsion**. Two bodies, A and B,
+repel each other with the same inertial spring model as Body Repulsion, each
+being the other's repeller. Every point is a disk of its body's Radius, and the
+gap between disk surfaces drives the push, so with Radius 0 and a passive B the
+node reproduces Body Repulsion with B's points as Force points exactly. A
+border wall keeps both bodies inside the 0–1 canvas.
+
+| Parameter | Meaning |
+| --- | --- |
+| `A Body_X`, `A Body_Y`, `B Body_X`, `B Body_Y` | Paired vectors of moving spring rest positions, one pair per body, with `-1` path separators. |
+| `A Radius`, `B Radius` | Disk radius of each point, default 0. The interaction distance is measured between disk surfaces, and the border is measured to the disk edge. |
+| `A Strength`, `B Strength` | How strongly this body pushes the other, default 1. Zero makes the body invisible to the other; 0.5 halves its push. |
+| `A FearDistance`, `B FearDistance` | Surface gap at which this body starts fleeing, default 0.15. Zero disables the response, even inside an overlap. |
+| `A Repulsion Strength`, `B Repulsion Strength` | Per-point push response, default 40. Also scales that body's border push. |
+| `A Return Strength`, `B Return Strength` | Spring stiffness toward the incoming coordinates, default 8; zero allows free drift. |
+| `A Damping`, `B Damping` | Momentum decay, default 3; zero removes drag. |
+| `Border Margin` | Distance from the canvas edge that no disk may cross, default 0. A hard limit: positions are clamped and momentum into the wall is dropped. |
+| `Border Feather` | Width of a soft push inside the margin, default 0. The push ramps with a squared falloff over the feather width and is full strength past the margin. |
+| `Reset` | Restore both bodies to their current coordinates and clear momentum on the next update. |
+| `A Out_X`, `A Out_Y`, `B Out_X`, `B Out_Y` | Paired simulated positions per body. |
+
+All per-body controls map to that body's points, excluding separators; one
+value broadcasts, shorter vectors repeat their last value, and float
+connections work as single values. Empty, negative or nonfinite control values
+act as zero. For each A/B pair the surface gap is the centre distance minus
+both radii; A accelerates away by `A Repulsion Strength × B Strength ×
+A FearDistance × falloff²` while the gap is inside `A FearDistance`, and B does
+the same with its own fear and strength roles swapped. Inside an overlap the
+push is constant, and exactly coincident points part in opposite directions.
+Each body keeps its own identity: a point count or separator layout change
+resets that body only, and an empty or invalid body clears its own output while
+the other keeps simulating.
+
+The border is active when `Border Margin` or `Border Feather` is above zero and
+assumes normalized 0–1 coordinates; with both at zero the output is unclamped,
+like Body Repulsion. A disk too large to fit is held at the canvas centre.
+
+Both bodies share one clock with fixed 1/240-second substeps and at most 0.1
+seconds of host time per update. Every A/B pair is evaluated once per substep
+and pushes both sides, pairs outside the largest reach skip the square root,
+and bodies whose expanded bounding boxes do not overlap skip the pair loop
+entirely. On an Apple Silicon laptop two bodies of 300 points cost about 0.8 ms
+per 60 fps frame while overlapping and under 0.03 ms while apart; 1000 points
+per body cost about 8 ms while overlapping, so a spatial index would only pay
+off beyond roughly 500 points per body.
+
+Run `python3 tests/two_body_repulsion_regression.py` on macOS with compiled
+sibling openFrameworks libraries, or add `--core-only` for standalone physics
+checks. The node tests share `tests/support/oceanodeHeadlessStubs.h` with Body
+Repulsion, which stands in for the GUI scope, scheduling and dropdown graph
+dependencies of core parameters.
+
 ## Trim Paths Pro
 
 Available under **Vector Graphics → Trim Paths Pro**. Combines local edge trimming,

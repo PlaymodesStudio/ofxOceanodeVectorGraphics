@@ -30,6 +30,7 @@
 #include "bezierCurve.h"
 #include "radialModulation.h"
 #include "bodyRepulsion.h"
+#include "twoBodyRepulsion.h"
 #include "waveIt.h"
 #include "wavePro.h"
 #include "shapeInterpolator.h"
@@ -72,6 +73,7 @@ void registerModels(ofxOceanode &o){
 	o.registerModel<bezierCurve>("Vector Graphics");
 	o.registerModel<radialModulation>("Vector Graphics");
 	o.registerModel<bodyRepulsion>("Vector Graphics");
+	o.registerModel<twoBodyRepulsion>("Vector Graphics");
 	o.registerModel<waveIt>("Vector Graphics");
 	o.registerModel<wavePro>("Vector Graphics");
 	o.registerModel<shapeInterpolator>("Vector Graphics");

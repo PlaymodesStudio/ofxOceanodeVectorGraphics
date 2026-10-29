@@ -10,11 +10,7 @@ static float testFrameTime() { return frameSeconds; }
 #include "../src/bodyRepulsion.h"
 #undef ofGetLastFrameTime
 
-// There are no GUI scopes in this headless fixture, and connections are destroyed
-// before their wrappers. Replace only their otherwise-unused GUI teardown dependency.
-void ofxOceanodeAbstractParameter::removeAllConnections() {
-    assert(!hasInConnection() && !hasOutConnections() && !isScoped());
-}
+#include "oceanodeHeadlessStubs.h"
 
 int main() {
     bodyRepulsion n; n.setup();
