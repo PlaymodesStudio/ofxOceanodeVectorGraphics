@@ -89,6 +89,7 @@ border wall keeps the points of both bodies inside the 0–1 canvas.
 | `Border Margin` | Distance from the canvas edge that no point may cross, default 0. A hard limit: positions are clamped and momentum into the wall is dropped. |
 | `Border Feather` | Width of a soft push inside the margin, default 0. The push ramps with a squared falloff over the feather width and is full strength past the margin. |
 | `Reset` | Restore both bodies to their current coordinates and clear momentum on the next update. |
+| `Clamp 0/1` | Default off. Hard wall at the canvas edge: every point stays inside 0–1 on both axes and momentum into the edge is dropped, whatever the border settings. Bypass ignores it. |
 | `A Out_X`, `A Out_Y`, `B Out_X`, `B Out_Y` | Paired simulated positions per body. |
 
 All per-body controls map to that body's points, excluding separators; one
@@ -103,9 +104,11 @@ Each body keeps its own identity: a point count or separator layout change
 resets that body only, and an empty or invalid body clears its own output while
 the other keeps simulating.
 
-The border is active when `Border Margin` or `Border Feather` is above zero and
-assumes normalized 0–1 coordinates; with both at zero the output is unclamped,
-like Body Repulsion. The wall acts on point positions and ignores Radius, so a
+The border is active when `Clamp 0/1` is on or `Border Margin` or `Border
+Feather` is above zero, and assumes normalized 0–1 coordinates; with all three
+off the output is unclamped, like Body Repulsion. `Clamp 0/1` alone is a hard
+wall at 0 and 1; a margin moves that wall inward and a feather adds the soft
+push. The wall acts on point positions and ignores Radius, so a
 contour body with a large Radius is not squeezed toward the centre; a margin
 past the canvas centre holds points at 0.5.
 

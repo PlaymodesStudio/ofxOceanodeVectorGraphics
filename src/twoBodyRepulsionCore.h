@@ -19,9 +19,10 @@ struct BodyControls {
     std::vector<float> damping{3.0f};        // Velocity decay rate, seconds^-1.
 };
 
-// Wall at the 0-1 canvas edge. Inactive while margin and feather are both zero.
+// Wall at the 0-1 canvas edge. Inactive while clamp is off and margin and feather are zero.
 // It constrains point positions; Radius only shapes the interaction between the Bodies.
 struct Border {
+    bool clamp = false;   // Hard limit at the canvas edge itself, 0 to 1 on both axes.
     double margin = 0.0;  // Hard limit measured from the edge to each point.
     double feather = 0.0; // Width of the soft push inside the margin.
 };
@@ -247,7 +248,7 @@ private:
         Wall wall;
         wall.margin = std::isfinite(border.margin) ? std::max(0.0, border.margin) : 0.0;
         wall.feather = std::isfinite(border.feather) ? std::max(0.0, border.feather) : 0.0;
-        wall.active = wall.margin > 0.0 || wall.feather > 0.0;
+        wall.active = border.clamp || wall.margin > 0.0 || wall.feather > 0.0;
         // Allowed range of a point. Margins past the canvas centre hold points at the centre.
         wall.low = wall.margin; wall.high = 1.0 - wall.margin;
         if(wall.low > wall.high) wall.low = wall.high = 0.5;

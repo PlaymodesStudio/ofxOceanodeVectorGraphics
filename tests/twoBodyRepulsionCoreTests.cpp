@@ -126,6 +126,18 @@ int main() {
         Simulation held; BodyControls strong; strong.returnStrength = {1000}; strong.damping = {0};
         for(int i = 0; i < 120; ++i) held.update({.0f}, {.5f}, strong, {.5f}, {.5f}, passive(), margin, 1.0/60);
         assert(near(held.aX()[0], .1f));
+        // Clamp alone is a hard wall at the canvas edge; with a margin the margin wins.
+        Border clamp; clamp.clamp = true;
+        Simulation clamped01; clamped01.update({-.2f}, {1.3f}, d, {.5f}, {.5f}, passive(), clamp, .1);
+        assert(clamped01.aX() == V{0.f} && clamped01.aY() == V{1.f});
+        Simulation inside01; inside01.update({.3f}, {.7f}, d, {.5f}, {.5f}, passive(), clamp, .1);
+        assert(inside01.aX() == V{.3f} && inside01.aY() == V{.7f});
+        Border clampMargin = clamp; clampMargin.margin = .1;
+        Simulation both01; both01.update({-.2f}, {1.3f}, d, {.5f}, {.5f}, passive(), clampMargin, .1);
+        assert(near(both01.aX()[0], .1f) && near(both01.aY()[0], .9f));
+        Simulation pushedOut; BodyControls strongDrift = d; strongDrift.repulsion = {1000};
+        pushedOut.update({.02f}, {.5f}, strongDrift, {.1f}, {.5f}, passive(), clamp, .1);
+        assert(pushedOut.aX()[0] == 0.f); // Repelled into the edge and held there.
         // Nonfinite or negative border values act as zero.
         Border invalid; invalid.margin = -1; invalid.feather = std::numeric_limits<double>::quiet_NaN();
         Simulation unaffected; unaffected.update({.02f}, {.98f}, d, {.5f}, {.5f}, passive(), invalid, .1);

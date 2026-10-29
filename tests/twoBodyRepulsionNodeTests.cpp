@@ -19,7 +19,7 @@ int main() {
     auto v = [&](const string& key) -> ofParameter<vector<float>>& { return n.parameter<vector<float>>(key); };
     auto f = [&](const string& key) -> ofParameter<float>& { return n.parameter<float>(key); };
     auto tick = [&]() { n.update(event); };
-    assert(!n.parameter<bool>("Bypass").get());
+    assert(!n.parameter<bool>("Bypass").get() && !n.parameter<bool>("Clamp 0/1").get());
     for(const string body : {"A", "B"}) {
         assert(v(body + " Radius").get() == vector<float>{0});
         assert(v(body + " Strength").get() == vector<float>{1});
@@ -81,6 +81,13 @@ int main() {
     n.parameter<void>("Reset").trigger(); v("A Body_X") = {.1f}; v("B Body_X") = {.5f}; tick(); tick();
     assert(v("A Out_X").get()[0] > .1f && v("B Out_X").get() == vector<float>{.5f});
     f("Border Feather") = 0;
+    n.parameter<void>("Reset").trigger();
+    v("A Body_X") = {-.3f}; v("A Body_Y") = {1.2f}; v("B Body_X") = {.5f}; tick();
+    assert(v("A Out_X").get() == vector<float>{-.3f} && v("A Out_Y").get() == vector<float>{1.2f});
+    n.parameter<bool>("Clamp 0/1") = true; tick();
+    assert(v("A Out_X").get() == vector<float>{0.f} && v("A Out_Y").get() == vector<float>{1.f});
+    assert(v("B Out_X").get() == vector<float>{.5f});
+    n.parameter<bool>("Clamp 0/1") = false; v("A Body_X") = {.1f}; v("A Body_Y") = {.5f};
 
     // Presets and transport reset both bodies.
     ofJson json;
@@ -139,6 +146,7 @@ int main() {
     // Bypass passes even mismatched/empty coordinates through, ignoring border and physics.
     const int readsBeforeBypass = frameTimeReads;
     n.parameter<bool>("Bypass") = true;
+    n.parameter<bool>("Clamp 0/1") = true;
     f("Border Margin") = .5f; f("Border Feather") = .5f;
     v("A Body_X") = {-.25f,-1,1.25f}; v("A Body_Y") = {.4f};
     v("B Body_X") = {}; v("B Body_Y") = {.7f,.8f};
@@ -164,6 +172,7 @@ int main() {
     assert(v("B Out_X").get() == vector<float>{.55f});
     assert(frameTimeReads == readsBeforeBypass); // Even the simulation clock is skipped.
     f("Border Margin") = 0; f("Border Feather") = 0;
+    n.parameter<bool>("Clamp 0/1") = false;
     n.parameter<bool>("Bypass") = false;
     tick(); // Resume at the current inputs, discarding the pre-bypass momentum.
     assert(v("A Out_X").get() == vector<float>{.45f});
@@ -171,6 +180,6 @@ int main() {
     tick();
     assert(v("A Out_X").get()[0] < .45f && v("B Out_X").get()[0] > .55f);
     std::cout << "PASS: defaults, mutual pushes, strength, radius, paired output events, border, "
-                 "reset/presets/transport, invalid bodies, real float connections, live vector controls "
-                 "and bypass/resume.\n";
+                 "reset/presets/transport, invalid bodies, real float connections, live vector controls, "
+                 "clamp 0/1 and bypass/resume.\n";
 }

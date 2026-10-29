@@ -17,11 +17,14 @@ public:
             "Damping map to that body's points; one value broadcasts, shorter vectors repeat their "
             "last value, excluding -1 separators. Border Margin keeps every point that far inside the "
             "0-1 canvas, ignoring Radius; Border Feather is the width of a soft push before the margin. Both at zero "
-            "leave the output unclamped. Reset restores both bodies. Point count or separator layout "
-            "changes reset that body only. Empty or invalid Body pairs clear that body's output. "
-            "Bypass copies all four input coordinates directly to the outputs without simulation.";
+            "leave the output unclamped. Clamp 0/1 holds every point inside the 0-1 canvas, dropping "
+            "momentum into the edge, even with the border off. Reset restores both bodies. Point count "
+            "or separator layout changes reset that body only. Empty or invalid Body pairs clear that "
+            "body's output. Bypass copies all four input coordinates directly to the outputs without "
+            "simulation or clamping.";
         addParameter(bypass.set("Bypass", false));
 		addParameter(reset.set("Reset"));
+        addParameter(clamp.set("Clamp 0/1", false));
 		addSeparator("BODY A", ofColor(100));
 		addBody(a, "A", 0.3f);
 		addSeparator("BODY B", ofColor(100));
@@ -42,6 +45,7 @@ public:
         const bool doReset = resetPending;
         resetPending = false;
         twoBodyRepulsionCore::Border border;
+        border.clamp = clamp.get();
         border.margin = borderMargin.get();
         border.feather = borderFeather.get();
         simulation.update(a.x.get(), a.y.get(), controls(a), b.x.get(), b.y.get(), controls(b),
@@ -96,7 +100,7 @@ private:
     }
 
     BodyPorts a, b;
-    ofParameter<bool> bypass;
+    ofParameter<bool> bypass, clamp;
     ofParameter<float> borderMargin, borderFeather;
     ofParameter<void> reset;
     ofEventListener resetListener;
