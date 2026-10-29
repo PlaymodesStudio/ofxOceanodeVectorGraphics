@@ -78,6 +78,7 @@ border wall keeps both bodies inside the 0–1 canvas.
 
 | Parameter | Meaning |
 | --- | --- |
+| `Bypass` | Default off. Copies all four body coordinate inputs directly to their outputs, skipping simulation and border calculations. Turning it off restarts from the current inputs with no momentum. |
 | `A Body_X`, `A Body_Y`, `B Body_X`, `B Body_Y` | Paired vectors of moving spring rest positions, one pair per body, with `-1` path separators. |
 | `A Radius`, `B Radius` | Disk radius of each point, default 0. The interaction distance is measured between disk surfaces, and the border is measured to the disk edge. |
 | `A Strength`, `B Strength` | How strongly this body pushes the other, default 1. Zero makes the body invisible to the other; 0.5 halves its push. |

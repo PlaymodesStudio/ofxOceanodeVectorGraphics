@@ -18,7 +18,9 @@ public:
             "last value, excluding -1 separators. Border Margin keeps every disk that far inside the "
             "0-1 canvas; Border Feather is the width of a soft push before the margin. Both at zero "
             "leave the output unclamped. Reset restores both bodies. Point count or separator layout "
-            "changes reset that body only. Empty or invalid Body pairs clear that body's output.";
+            "changes reset that body only. Empty or invalid Body pairs clear that body's output. "
+            "Bypass copies all four input coordinates directly to the outputs without simulation.";
+        addParameter(bypass.set("Bypass", false));
 		addParameter(reset.set("Reset"));
 		addSeparator("BODY A", ofColor(100));
 		addBody(a, "A", 0.3f);
@@ -32,6 +34,11 @@ public:
     }
 
     void update(ofEventArgs&) override {
+        if(bypass.get()) {
+            resetPending = true;
+            publishOutputs(a.x.get(), a.y.get(), b.x.get(), b.y.get());
+            return;
+        }
         const bool doReset = resetPending;
         resetPending = false;
         twoBodyRepulsionCore::Border border;
@@ -39,8 +46,18 @@ public:
         border.feather = borderFeather.get();
         simulation.update(a.x.get(), a.y.get(), controls(a), b.x.get(), b.y.get(), controls(b),
                           border, ofGetLastFrameTime(), doReset);
-        // Stage all four vectors before callbacks, and notify each body's X last for X-driven consumers.
         const auto ax = simulation.aX(), ay = simulation.aY(), bx = simulation.bX(), by = simulation.bY();
+        publishOutputs(ax, ay, bx, by);
+    }
+
+    void presetRecallBeforeSettingParameters(ofJson&) override { resetPending = true; }
+    void presetHasLoaded() override { resetPending = true; }
+    void resetPhase() override { resetPending = true; }
+
+private:
+    void publishOutputs(const vector<float>& ax, const vector<float>& ay,
+                        const vector<float>& bx, const vector<float>& by) {
+        // Stage all four vectors before callbacks, and notify each body's X last for X-driven consumers.
         const bool aChanged = ax != a.outX.get() || ay != a.outY.get();
         const bool bChanged = bx != b.outX.get() || by != b.outY.get();
         a.outX.setWithoutEventNotifications(ax); a.outY.setWithoutEventNotifications(ay);
@@ -49,11 +66,6 @@ public:
         if(bChanged) { b.outY.set(by); b.outX.set(bx); }
     }
 
-    void presetRecallBeforeSettingParameters(ofJson&) override { resetPending = true; }
-    void presetHasLoaded() override { resetPending = true; }
-    void resetPhase() override { resetPending = true; }
-
-private:
     struct BodyPorts {
         ofParameter<vector<float>> x, y, radius, strength, fearDistance, repulsion, returnStrength, damping;
         ofParameter<vector<float>> outX, outY;
@@ -84,6 +96,7 @@ private:
     }
 
     BodyPorts a, b;
+    ofParameter<bool> bypass;
     ofParameter<float> borderMargin, borderFeather;
     ofParameter<void> reset;
     ofEventListener resetListener;

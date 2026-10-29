@@ -20,6 +20,7 @@ public:
     template<class T> void addParameter(ofParameter<T>& p) { parameters_[p.getName()] = &p; }
     template<class T> void addOutputParameter(ofParameter<T>& p) { addParameter(p); }
     template<class T> void addInspectorParameter(ofParameter<T>& p) { addParameter(p); }
+    void addSeparator(string = "", ofColor = ofColor(200, 200, 200, 255)) {}
     void addParameterDropdown(ofParameter<int>& p, const string& name, int value, const vector<string>& options) {
         addParameter(p.set(name,value,0,static_cast<int>(options.size())-1));
     }

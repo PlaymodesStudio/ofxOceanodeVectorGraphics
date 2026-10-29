@@ -5,7 +5,8 @@
 
 // Supply host frame duration without requiring a running window. OF parameters/events are real.
 static float frameSeconds = 1.0f / 60.0f;
-static float testFrameTime() { return frameSeconds; }
+static int frameTimeReads = 0;
+static float testFrameTime() { ++frameTimeReads; return frameSeconds; }
 #define ofGetLastFrameTime testFrameTime
 #include "../src/twoBodyRepulsion.h"
 #undef ofGetLastFrameTime
@@ -18,6 +19,7 @@ int main() {
     auto v = [&](const string& key) -> ofParameter<vector<float>>& { return n.parameter<vector<float>>(key); };
     auto f = [&](const string& key) -> ofParameter<float>& { return n.parameter<float>(key); };
     auto tick = [&]() { n.update(event); };
+    assert(!n.parameter<bool>("Bypass").get());
     for(const string body : {"A", "B"}) {
         assert(v(body + " Radius").get() == vector<float>{0});
         assert(v(body + " Strength").get() == vector<float>{1});
@@ -134,6 +136,41 @@ int main() {
     p("A Return Strength") = {0,8}; p("A Body_X") = {.1f,.1f}; varying.update(event);
     assert(p("A Out_X").get()[0] < previousX[0]); // Prior momentum retained.
     assert(p("A Out_X").get()[1] < previousX[1]); // Second point follows its new spring target.
+    // Bypass passes even mismatched/empty coordinates through, ignoring border and physics.
+    const int readsBeforeBypass = frameTimeReads;
+    n.parameter<bool>("Bypass") = true;
+    f("Border Margin") = .5f; f("Border Feather") = .5f;
+    v("A Body_X") = {-.25f,-1,1.25f}; v("A Body_Y") = {.4f};
+    v("B Body_X") = {}; v("B Body_Y") = {.7f,.8f};
+    order.clear();
+    ay = v("A Out_Y").newListener([&](vector<float>&) {
+        order.push_back("AY");
+        assert(v("B Out_Y").get() == v("B Body_Y").get());
+    });
+    ax = v("A Out_X").newListener([&](vector<float>&) { order.push_back("AX"); });
+    by = v("B Out_Y").newListener([&](vector<float>&) { order.push_back("BY"); });
+    bx = v("B Out_X").newListener([&](vector<float>&) { order.push_back("BX"); });
+    tick();
+    assert(order == vector<string>({"AY", "AX", "BY", "BX"}));
+    for(const string body : {"A", "B"})
+        for(const string axis : {"X", "Y"})
+            assert(v(body + " Out_" + axis).get() == v(body + " Body_" + axis).get());
+    order.clear(); tick(); assert(order.empty());
+    ay.reset(); ax.reset(); by.reset(); bx.reset();
+    v("A Body_X") = {.45f}; v("A Body_Y") = {.5f};
+    v("B Body_X") = {.55f}; v("B Body_Y") = {.5f};
+    tick();
+    assert(v("A Out_X").get() == vector<float>{.45f});
+    assert(v("B Out_X").get() == vector<float>{.55f});
+    assert(frameTimeReads == readsBeforeBypass); // Even the simulation clock is skipped.
+    f("Border Margin") = 0; f("Border Feather") = 0;
+    n.parameter<bool>("Bypass") = false;
+    tick(); // Resume at the current inputs, discarding the pre-bypass momentum.
+    assert(v("A Out_X").get() == vector<float>{.45f});
+    assert(v("B Out_X").get() == vector<float>{.55f});
+    tick();
+    assert(v("A Out_X").get()[0] < .45f && v("B Out_X").get()[0] > .55f);
     std::cout << "PASS: defaults, mutual pushes, strength, radius, paired output events, border, "
-                 "reset/presets/transport, invalid bodies, real float connections and live vector controls.\n";
+                 "reset/presets/transport, invalid bodies, real float connections, live vector controls "
+                 "and bypass/resume.\n";
 }
