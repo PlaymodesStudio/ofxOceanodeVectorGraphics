@@ -15,8 +15,8 @@ public:
             "Repulsion Strength times the other body's Strength. Return Strength pulls back; Damping "
             "slows momentum. Radius, Strength, FearDistance, Repulsion Strength, Return Strength and "
             "Damping map to that body's points; one value broadcasts, shorter vectors repeat their "
-            "last value, excluding -1 separators. Border Margin keeps every disk that far inside the "
-            "0-1 canvas; Border Feather is the width of a soft push before the margin. Both at zero "
+            "last value, excluding -1 separators. Border Margin keeps every point that far inside the "
+            "0-1 canvas, ignoring Radius; Border Feather is the width of a soft push before the margin. Both at zero "
             "leave the output unclamped. Reset restores both bodies. Point count or separator layout "
             "changes reset that body only. Empty or invalid Body pairs clear that body's output. "
             "Bypass copies all four input coordinates directly to the outputs without simulation.";

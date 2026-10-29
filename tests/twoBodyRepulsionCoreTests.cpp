@@ -102,11 +102,12 @@ int main() {
         Border margin; margin.margin = .1;
         Simulation walled; walled.update({.02f}, {.98f}, d, {.5f}, {.5f}, passive(), margin, .1);
         assert(near(walled.aX()[0], .1f) && near(walled.aY()[0], .9f));
-        BodyControls disk = d; disk.radius = {.05f};
+        // Radius only shapes the Body interaction; the wall constrains the points themselves.
+        BodyControls disk = d; disk.radius = {.3f};
         Simulation diskWall; diskWall.update({.02f}, {.98f}, disk, {.5f}, {.5f}, passive(), margin, .1);
-        assert(near(diskWall.aX()[0], .15f) && near(diskWall.aY()[0], .85f));
-        BodyControls huge = d; huge.radius = {.6f};
-        Simulation centred; centred.update({.02f}, {.98f}, huge, {.5f}, {.5f}, passive(), margin, .1);
+        assert(near(diskWall.aX()[0], .1f) && near(diskWall.aY()[0], .9f));
+        Border huge; huge.margin = .6;
+        Simulation centred; centred.update({.02f}, {.98f}, d, {.5f}, {.5f}, passive(), huge, .1);
         assert(near(centred.aX()[0], .5f) && near(centred.aY()[0], .5f));
         Border feather; feather.margin = .1; feather.feather = .1;
         Simulation soft; soft.update({.15f}, {.5f}, d, {.5f}, {.5f}, passive(), feather, 1.0/60);

@@ -20,8 +20,9 @@ struct BodyControls {
 };
 
 // Wall at the 0-1 canvas edge. Inactive while margin and feather are both zero.
+// It constrains point positions; Radius only shapes the interaction between the Bodies.
 struct Border {
-    double margin = 0.0;  // Hard limit measured from the edge to each disk's surface.
+    double margin = 0.0;  // Hard limit measured from the edge to each point.
     double feather = 0.0; // Width of the soft push inside the margin.
 };
 
@@ -63,7 +64,7 @@ private:
         double radius, strength, fear, repulsion, returnStrength, decay, accelerationTime;
         bool responds; // Fear and Repulsion Strength both positive.
     };
-    struct Wall { bool active; double margin, feather; };
+    struct Wall { bool active; double margin, feather, low, high; };
 
     struct Body {
         std::vector<Particle> particles;
@@ -136,10 +137,8 @@ private:
                 p.ax = r.returnStrength * ((*restX)[i] - p.x);
                 p.ay = r.returnStrength * ((*restY)[i] - p.y);
                 if(!wall.active || wall.feather <= 0.0 || r.repulsion <= 0.0) continue;
-                double low, high;
-                limits(wall, r.radius, low, high);
-                p.ax += wallPush(p.x, low, high, wall.feather, r.repulsion);
-                p.ay += wallPush(p.y, low, high, wall.feather, r.repulsion);
+                p.ax += wallPush(p.x, wall, r.repulsion);
+                p.ay += wallPush(p.y, wall, r.repulsion);
             }
         }
 
@@ -153,12 +152,10 @@ private:
                 p.vy = p.vy * r.decay + p.ay * r.accelerationTime;
                 p.x += p.vx * step; p.y += p.vy * step;
                 if(wall.active) {
-                    double low, high;
-                    limits(wall, r.radius, low, high);
-                    if(p.x < low) { p.x = low; p.vx = std::max(p.vx, 0.0); }
-                    else if(p.x > high) { p.x = high; p.vx = std::min(p.vx, 0.0); }
-                    if(p.y < low) { p.y = low; p.vy = std::max(p.vy, 0.0); }
-                    else if(p.y > high) { p.y = high; p.vy = std::min(p.vy, 0.0); }
+                    if(p.x < wall.low) { p.x = wall.low; p.vx = std::max(p.vx, 0.0); }
+                    else if(p.x > wall.high) { p.x = wall.high; p.vx = std::min(p.vx, 0.0); }
+                    if(p.y < wall.low) { p.y = wall.low; p.vy = std::max(p.vy, 0.0); }
+                    else if(p.y > wall.high) { p.y = wall.high; p.vy = std::min(p.vy, 0.0); }
                 }
                 constexpr double limit = std::numeric_limits<float>::max();
                 if(!std::isfinite(p.x) || !std::isfinite(p.y) ||
@@ -251,24 +248,22 @@ private:
         wall.margin = std::isfinite(border.margin) ? std::max(0.0, border.margin) : 0.0;
         wall.feather = std::isfinite(border.feather) ? std::max(0.0, border.feather) : 0.0;
         wall.active = wall.margin > 0.0 || wall.feather > 0.0;
+        // Allowed range of a point. Margins past the canvas centre hold points at the centre.
+        wall.low = wall.margin; wall.high = 1.0 - wall.margin;
+        if(wall.low > wall.high) wall.low = wall.high = 0.5;
         return wall;
     }
-    // Allowed range of a disk centre. An oversized disk is held at the canvas centre.
-    static void limits(const Wall& wall, double radius, double& low, double& high) {
-        low = wall.margin + radius; high = 1.0 - wall.margin - radius;
-        if(low > high) low = high = 0.5;
-    }
     // Squared falloff over the feather width, at full strength past the margin.
-    static double wallPush(double value, double low, double high, double feather, double repulsion) {
+    static double wallPush(double value, const Wall& wall, double repulsion) {
         double push = 0.0;
-        const double fromLow = value - low, fromHigh = high - value;
-        if(fromLow < feather) {
-            const double falloff = 1.0 - std::max(fromLow, 0.0) / feather;
-            push += repulsion * feather * falloff * falloff;
+        const double fromLow = value - wall.low, fromHigh = wall.high - value;
+        if(fromLow < wall.feather) {
+            const double falloff = 1.0 - std::max(fromLow, 0.0) / wall.feather;
+            push += repulsion * wall.feather * falloff * falloff;
         }
-        if(fromHigh < feather) {
-            const double falloff = 1.0 - std::max(fromHigh, 0.0) / feather;
-            push -= repulsion * feather * falloff * falloff;
+        if(fromHigh < wall.feather) {
+            const double falloff = 1.0 - std::max(fromHigh, 0.0) / wall.feather;
+            push -= repulsion * wall.feather * falloff * falloff;
         }
         return push;
     }

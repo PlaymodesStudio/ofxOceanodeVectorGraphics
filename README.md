@@ -74,19 +74,19 @@ repel each other with the same inertial spring model as Body Repulsion, each
 being the other's repeller. Every point is a disk of its body's Radius, and the
 gap between disk surfaces drives the push, so with Radius 0 and a passive B the
 node reproduces Body Repulsion with B's points as Force points exactly. A
-border wall keeps both bodies inside the 0–1 canvas.
+border wall keeps the points of both bodies inside the 0–1 canvas.
 
 | Parameter | Meaning |
 | --- | --- |
 | `Bypass` | Default off. Copies all four body coordinate inputs directly to their outputs, skipping simulation and border calculations. Turning it off restarts from the current inputs with no momentum. |
 | `A Body_X`, `A Body_Y`, `B Body_X`, `B Body_Y` | Paired vectors of moving spring rest positions, one pair per body, with `-1` path separators. |
-| `A Radius`, `B Radius` | Disk radius of each point, default 0. The interaction distance is measured between disk surfaces, and the border is measured to the disk edge. |
+| `A Radius`, `B Radius` | Disk radius of each point, default 0. The interaction distance is measured between disk surfaces. The border ignores it. |
 | `A Strength`, `B Strength` | How strongly this body pushes the other, default 1. Zero makes the body invisible to the other; 0.5 halves its push. |
 | `A FearDistance`, `B FearDistance` | Surface gap at which this body starts fleeing, default 0.15. Zero disables the response, even inside an overlap. |
 | `A Repulsion Strength`, `B Repulsion Strength` | Per-point push response, default 40. Also scales that body's border push. |
 | `A Return Strength`, `B Return Strength` | Spring stiffness toward the incoming coordinates, default 8; zero allows free drift. |
 | `A Damping`, `B Damping` | Momentum decay, default 3; zero removes drag. |
-| `Border Margin` | Distance from the canvas edge that no disk may cross, default 0. A hard limit: positions are clamped and momentum into the wall is dropped. |
+| `Border Margin` | Distance from the canvas edge that no point may cross, default 0. A hard limit: positions are clamped and momentum into the wall is dropped. |
 | `Border Feather` | Width of a soft push inside the margin, default 0. The push ramps with a squared falloff over the feather width and is full strength past the margin. |
 | `Reset` | Restore both bodies to their current coordinates and clear momentum on the next update. |
 | `A Out_X`, `A Out_Y`, `B Out_X`, `B Out_Y` | Paired simulated positions per body. |
@@ -105,7 +105,9 @@ the other keeps simulating.
 
 The border is active when `Border Margin` or `Border Feather` is above zero and
 assumes normalized 0–1 coordinates; with both at zero the output is unclamped,
-like Body Repulsion. A disk too large to fit is held at the canvas centre.
+like Body Repulsion. The wall acts on point positions and ignores Radius, so a
+contour body with a large Radius is not squeezed toward the centre; a margin
+past the canvas centre holds points at 0.5.
 
 Both bodies share one clock with fixed 1/240-second substeps and at most 0.1
 seconds of host time per update. Every A/B pair is evaluated once per substep
