@@ -107,6 +107,28 @@ int main() {
     assert(shifted.parameter<string>("Status").get().find("Origin") != string::npos);
     assert(shifted.parameter<vector<float>>("WrappedSegment.X").get() == vector<float>({0,0,-1}));
 
+    // Bypass? skips calculation and keeps the outputs; pending changes apply once it is released.
+    trimPathsPro bypassed; bypassed.setup();
+    bypassed.parameter<vector<float>>("In.X") = {0,1}; bypassed.parameter<vector<float>>("In.Y") = {0,0};
+    bypassed.update(event);
+    assert(bypassed.parameter<vector<float>>("Out.X").get() == vector<float>({0,1,-1}));
+    int bypassNotifications = 0;
+    auto bypassListener = bypassed.parameter<vector<float>>("Out.X").newListener([&](vector<float>&) { ++bypassNotifications; });
+    bypassed.parameter<bool>("Bypass?") = true;
+    bypassed.parameter<vector<float>>("End") = {.5f};
+    bypassed.update(event); bypassed.update(event);
+    assert(bypassNotifications == 0 && bypassed.parameter<vector<float>>("Out.X").get() == vector<float>({0,1,-1}));
+    bypassed.parameter<bool>("Bypass?") = false; bypassed.update(event);
+    assert(bypassNotifications == 1 && bypassed.parameter<vector<float>>("Out.X").get() == vector<float>({0,.5f,-1}));
+    // Republished identical inputs publish nothing; a real change or a recalled preset publishes.
+    bypassed.parameter<vector<float>>("In.X") = {0,1}; bypassed.parameter<vector<float>>("End") = {.5f};
+    bypassed.update(event); assert(bypassNotifications == 1);
+    bypassed.parameter<vector<float>>("In.X") = {0,2}; bypassed.update(event);
+    assert(bypassNotifications == 2 && bypassed.parameter<vector<float>>("Out.X").get() == vector<float>({0,1,-1}));
+    ofJson none; bypassed.presetRecallAfterSettingParameters(none); bypassed.update(event);
+    assert(bypassNotifications == 3);
+    bypassed.parameter<int>("Scope") = 0; bypassed.update(event); assert(bypassNotifications == 4);
+
     // Exercise the real ImGui group editor without a window/GPU backend.
     ImGui::CreateContext();
     auto& io = ImGui::GetIO();

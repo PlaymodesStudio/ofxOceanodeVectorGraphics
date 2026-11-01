@@ -222,5 +222,37 @@ int main() {
             check(std::abs(visibleLength-retainedLength) < 1e-5); // No extra seam connectors.
         }
     }
+    // Persistent buffers give the same answer as fresh ones, and inputs may shrink or fail between calls.
+    {
+        Geometry reused; Result out; Workspace w;
+        parse({0,1,1,-1,0,.5f,1,2}, {0,0,1,-1,0,0,0,0}, reused);
+        check(reused.paths.size() == 2 && reused.edges.size() == 5 && reused.pathEdgeBegin == std::vector<int>({0,2,5}));
+        parse({0,1}, {0,0}, reused);
+        check(reused.paths.size() == 1 && reused.edges.size() == 1 && reused.pathEdgeBegin == std::vector<int>({0,1}));
+        s = Settings{}; s.end = {.25f}; s.origin = {.875f}; s.endpointDots = true;
+        trim(reused, s, out, w);
+        const auto fresh = trim(reused, s);
+        check(out.x == fresh.x && out.y == fresh.y && out.fullX == fresh.fullX && out.wrappedX == fresh.wrappedX &&
+              out.completeness == fresh.completeness && out.sourceEdge == fresh.sourceEdge && out.status == fresh.status);
+        check(out.x == std::vector<float>({.875f,1,-1,0,.125f,-1,.875f,-1,1,-1,0,-1,.125f,-1}));
+        s.endpointDots = false; s.scope = Scope::Groups; s.groups = {{0},{0}}; s.origin = {.5f,.875f};
+        trim(reused, s, out, w);
+        check(out.x == trim(reused, s).x && out.sourceGroup == std::vector<int>({0,1})); invariant(out);
+        parse({0,1}, {0}, reused); check(!reused.error.empty() && reused.paths.empty() && reused.edges.empty());
+        trim(reused, s, out, w); check(!out.valid && out.x.empty() && out.fullX.empty() && out.sourceGroup.empty());
+        parse({0,-1,-1,1,2}, {0,-1,-1,0,0}, reused);
+        check(reused.paths.size() == 2 && reused.edges.size() == 1 && reused.pathEdgeBegin == std::vector<int>({0,0,1}));
+        check(square.pathClosed == std::vector<char>({1}) && g.pathClosed == std::vector<char>({0,0}));
+    }
+    // Endpoint dots deduplicate exactly within a path, including non-adjacent repeated vertices and closed seams.
+    s = Settings{}; s.endpointDots = true;
+    r = trim(parse({0,1,1,0,2}, {0,0,1,0,2}), s);
+    check(r.x == std::vector<float>({0,1,1,0,2,-1,0,-1,1,-1,1,-1,2,-1})); invariant(r);
+    r = trim(square, s); check(std::count(r.x.begin(), r.x.end(), -1) == 5); invariant(r);
+    // Pieces end exactly on their vertex, so neighbours share it bit for bit.
+    r = trim(parse({.1f,.7f,.3f}, {.2f,.9f,.4f}), Settings{});
+    check(r.x == std::vector<float>({.1f,.7f,.3f,-1}) && r.y == std::vector<float>({.2f,.9f,.4f,-1}));
+    check(Settings{} == Settings{}); s = Settings{}; s.start = {.1f}; check(s != Settings{});
+    s = Settings{}; s.groups = {{0}}; check(s != Settings{});
     std::cout << "TrimPathsPro core: " << checks << " checks passed (including 1000 randomized cases).\n";
 }
