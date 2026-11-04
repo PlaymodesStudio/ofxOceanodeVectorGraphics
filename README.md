@@ -346,3 +346,49 @@ metaballs, for jelly. Very low Damping with high Propagation makes fast, busy
 ripples; Stiffness `0` with strong Motion Influence soon reaches the safety stop.
 
 Run `python3 tests/wave_pro_regression.py` (or `--core-only`).
+
+## 1D Contour
+
+Available under **Vector Graphics → 1D Contour**. Unfolds a closed body outline
+(for example a MetaballsV3 contour) along its spine into a 1D profile: the
+distance from the spine to the outline, from head to tail, resampled to `Size`
+values. The profile depends only on the body's shape. Moving, rotating or
+bending the body, or changing where its path starts, gives the same vector, so
+a Spectral Filter Box mask driven by it makes an organism sound the same
+whatever its orientation.
+
+| Parameter | Meaning |
+| --- | --- |
+| `In.X`, `In.Y` | Contour points, paired `-1` separators between shapes. Every path is treated as a closed outline (a repeated closing point is fine). |
+| `Resample` | Default `512`. Outline points analysed, evenly spaced, so points sliding along the outline (MetaballsV3) do not matter. |
+| `Size` | Default `256` (the Spectral Filter Box mask size). Profile samples from head (index 0) to tail (last). |
+| `Head` | Which tip comes first. `Wide End` (default): the fatter end (width integrated over the first 30% of the spine against the last 30%). `Narrow End`: the opposite. `Point`: the tip nearest `Point.X/Y` (one point per shape, cycling), for example Metab Points' `Cap 1 X/Y`. `Motion`: the tip leading the body's movement (smoothed centre motion between updates). Every rule keeps last frame's choice unless the other end wins by `Hysteresis`, so a symmetric body never swaps ends. |
+| `Point.X`, `Point.Y` | Point mode: the head is the tip nearest this point. |
+| `Flip` | Swaps head and tail after the rule (the carried orientation is not affected). |
+| `Profile` | `Width` (default): both sides added, the body's thickness along the spine. `Left` / `Right`: one side's distance from the spine, left or right of the head-to-tail direction as seen on screen. `Loop`: left head to tail, then right tail to head: the whole outline unwrapped, `2 x Size` values with the head at both ends. |
+| `Shape` | `Largest` (default, by area), `Index` (the `Index`-th shape in input order; empty when out of range) or `All` (one profile per shape, separated by `-1`; not for a mask input). |
+| `Normalize`, `Gain` | Normalize scales each profile so its peak is 1; Gain multiplies. Half widths in 0-1 coordinates are small (0.03-0.2), so a Gain of 3-10, or Normalize, is usual for a mask. |
+| `Spine Smooth` | Default `0.1`. Box window on the spine, as a fraction of its length. The spine is the midline between the outline's two sides, so it leans toward a bump on one side and Left/Right then differ little; a stiffer spine (0.3-0.5) makes one-sided bumps show on their own side. Width is the same either way. |
+| `Smooth` | Box window on the profile, fraction of its length. |
+| `Hysteresis` | Inspector, default `0.1`. Margin before the carried tips are re-picked (a new diameter must be this much longer than the carried chord) and before the head rule swaps ends (share of the end masses, distance relative to the body's size, or lead relative to the body's size). |
+| `Out` | The profile(s). |
+| `Length` | Spine length per shape, in input units. |
+| `Head.X/Y`, `Tail.X/Y` | The tips per shape, for drawing and checking. |
+| `Spine.X/Y` | The spine polyline per shape, head to tail, `-1` separated. |
+
+How it works, per shape: the outline is resampled; its two tips are the
+farthest pair of outline points (its diameter). From frame to frame the tips
+are carried with the body (centre translation, plus rotation of its long axis
+when it is elongated enough), snapped to the new outline and let climb to the
+local maximum of their mutual distance, so they re-centre on the true tip of
+their lobe every frame; the farthest pair is only picked afresh when it beats
+the carried chord by `Hysteresis`. The outline is split at the tips into two
+sides; the spine is the midline between them (sides paired by arc fraction),
+smoothed, then measured by its own arc length, which is the unfolded x axis.
+Every outline point is projected onto the spine (position along it, distance
+from it), and each side is rasterised into `Size` bins keeping the farthest
+point per bin. The profile is 0 at a pointed tip; a blunt end starts at the
+half-width of its front, since those outline points are that far from the
+spine's end. Preset load and a global phase reset forget the carried tips.
+
+Run `python3 tests/contour_1d_regression.py` (or `--core-only`).

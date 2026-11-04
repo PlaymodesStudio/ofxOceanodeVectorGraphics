@@ -33,6 +33,7 @@
 #include "twoBodyRepulsion.h"
 #include "waveIt.h"
 #include "wavePro.h"
+#include "contour1D.h"
 #include "shapeInterpolator.h"
 #include "pointAtPercent.h"
 #include "shapeFeather.h"
@@ -76,6 +77,7 @@ void registerModels(ofxOceanode &o){
 	o.registerModel<twoBodyRepulsion>("Vector Graphics");
 	o.registerModel<waveIt>("Vector Graphics");
 	o.registerModel<wavePro>("Vector Graphics");
+	o.registerModel<contour1D>("Vector Graphics");
 	o.registerModel<shapeInterpolator>("Vector Graphics");
 	o.registerModel<pointAtPercent>("Vector Graphics");
 	o.registerModel<shapeFeather>("Vector Graphics");
