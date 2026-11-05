@@ -13,8 +13,11 @@ public:
             "stretched from start to end of every separate shape. Wave Offset and Wave Repeat "
             "shift and tile the wave, one value per shape. Distribute By Length shares the Wave Cycles "
             "contained in Wave In between shapes in whole cycles, in proportion to their "
-            "perimeters (at least one each when possible), so all blobs get a similar "
-            "wavelength; shares change only when clearly unfair, to avoid flicker. Anchor sets where closed shapes start "
+            "perimeters, so all blobs get a similar wavelength. Min Cycles (default 3, 0 = no minimum) "
+            "is the fewest cycles any shape gets (fewer only if Wave Cycles is lower), so small blobs "
+            "never look flat; when that needs more cycles than Wave In holds, the extra ones wrap "
+            "round to its start. Shares change only "
+            "when clearly unfair, to avoid flicker. Anchor sets where closed shapes start "
             "reading the wave, always running clockwise: Tracked (default) follows the body from "
             "frame to frame, so the wave stays put when the input's start point or direction "
             "changes (e.g. MetaballsV3) and never hops as the body bends or turns; Stable uses "
@@ -37,6 +40,7 @@ public:
         addParameter(waveRepeat.set("Wave Repeat", {1.f}, {0.f}, {32.f}));
         addParameterDropdown(distribute, "Distribute", 0, {"Per Shape", "By Length"});
         addParameter(waveCycles.set("Wave Cycles", 1, 1, 1024));
+        addParameter(minCycles.set("Min Cycles", waveProCore::kMinShapeCycles, 0, 64));
         addParameterDropdown(anchor, "Anchor", 2, {"Path Start", "Stable", "Tracked"});
         addParameter(resample.set("Resample", 512, 0, 4096));
         addParameter(amount.set("Amount", {0.05f}, {-1.f}, {1.f}));
@@ -55,6 +59,7 @@ public:
         listeners.push(anchor.newListener([this](int&) { dirty = true; }));
         listeners.push(distribute.newListener([this](int&) { dirty = true; }));
         listeners.push(waveCycles.newListener([this](int&) { dirty = true; }));
+        listeners.push(minCycles.newListener([this](int&) { dirty = true; }));
         listeners.push(resample.newListener([this](int&) { dirty = true; }));
         listeners.push(bypass.newListener([this](bool&) { simulation.reset(); dirty = true; }));
     }
@@ -66,7 +71,7 @@ public:
         if(bypass) { publish({xIn.get(), yIn.get()}); return; }
         const waveProCore::Controls controls{wave.get(), waveOffset.get(), waveRepeat.get(),
             amount.get(), smooth.get(), stiffness.get(), damping.get(), propagation.get(), motion.get(),
-            anchor.get(), distribute.get(), waveCycles.get(), resample.get()};
+            anchor.get(), distribute.get(), waveCycles.get(), minCycles.get(), resample.get()};
         publish(simulation.update(xIn.get(), yIn.get(), controls, spring, ofGetLastFrameTime()));
     }
 
@@ -86,7 +91,7 @@ private:
 
     ofParameter<std::vector<float>> xIn, yIn, wave, waveOffset, waveRepeat, amount, smooth;
     ofParameter<std::vector<float>> stiffness, damping, propagation, motion, xOut, yOut;
-    ofParameter<int> response, anchor, distribute, waveCycles, resample;
+    ofParameter<int> response, anchor, distribute, waveCycles, minCycles, resample;
     ofParameter<bool> bypass;
     waveProCore::Simulation simulation;
     ofEventListeners listeners;

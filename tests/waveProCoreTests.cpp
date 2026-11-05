@@ -182,8 +182,18 @@ int main() {
         assert(near(cyclesOf(r, bx, by, 0, 401, .3, .5), 12, .51) && near(cyclesOf(r, bx, by, 402, 803, .75, .5), 12, .51));
         c.distribute = kByLength; r = direct(bx, by, c);             // perimeters 2:1 -> 8 + 4
         assert(near(cyclesOf(r, bx, by, 0, 401, .3, .5), 8, .51) && near(cyclesOf(r, bx, by, 402, 803, .75, .5), 4, .51));
-        c.waveCycles = 1; r = direct(bx, by, c);                     // too few: the small blob gets none
+        c.waveCycles = 1; r = direct(bx, by, c);                     // too few: each still reads the whole buffer
+        assert(near(cyclesOf(r, bx, by, 402, 803, .75, .5), 12, .51));
+        V tx, ty; twoBlobs(.2, .02, false, tx, ty);                   // perimeters 10:1, ideal 10.9 + 1.1
+        c.waveCycles = 12; r = direct(tx, ty, c);                    // floor: 9 + 3, still 12 in all
+        assert(near(cyclesOf(r, tx, ty, 0, 401, .3, .5), 9, .51) && near(cyclesOf(r, tx, ty, 402, 803, .75, .5), 3, .51));
+        c.waveCycles = 4; c.wave = sine(1200, 4); r = direct(bx, by, c);   // floor needs 6 > 4: wraps round
+        assert(near(cyclesOf(r, bx, by, 0, 401, .3, .5), 3, .51) && near(cyclesOf(r, bx, by, 402, 803, .75, .5), 3, .51));
+        c.minCycles = 0; c.waveCycles = 1; r = direct(bx, by, c);    // no floor: the small blob gets none
         for(size_t i = 402; i < 803; ++i) assert(near(r.x[i], bx[i], 1e-6) && near(r.y[i], by[i], 1e-6));
+        c.minCycles = 1; c.waveCycles = 4; r = direct(tx, ty, c);    // floor 1 on 10:1 -> 3 + 1
+        assert(near(cyclesOf(r, tx, ty, 0, 401, .3, .5), 3, .51) && near(cyclesOf(r, tx, ty, 402, 803, .75, .5), 1, .51));
+        c.minCycles = kMinShapeCycles;
         // Hysteresis: the small blob breathes across the 3/4 cycle boundary without flickering,
         // keeps its share when the input lists it first, and changes once it has clearly grown.
         c.waveCycles = 9; c.wave = sine(900, 9);

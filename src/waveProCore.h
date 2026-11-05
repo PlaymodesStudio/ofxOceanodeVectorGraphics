@@ -29,6 +29,12 @@ enum DistributeMode { kPerShape = 0, kByLength = 1 };
 // A shape's share of the wave cycles, carried between frames by Simulation.
 struct CycleState { Vec2 centre; double radius = 0; int cycles = 0; };
 
+// Default By Length floor (Controls::minCycles). On a roughly round shape one
+// cycle along the normals only slides it sideways and two make an oval: about
+// three are needed to read as a wave, so small blobs split off a big one never
+// look flat.
+constexpr int kMinShapeCycles = 3;
+
 struct Controls {
     std::vector<float> wave, waveOffset, waveRepeat;     // offset/repeat: one value per shape
     std::vector<float> amount, smooth;                   // mapped along each perimeter
@@ -36,9 +42,12 @@ struct Controls {
     int anchor = kStable;     // AnchorMode
     // By Length: Wave In holds waveCycles cycles, shared out in whole cycles
     // between shapes in proportion to their perimeters, so all shapes together
-    // read the buffer once with a similar wavelength.
+    // read the buffer once with a similar wavelength. Every shape gets at
+    // least minCycles (or waveCycles, if fewer), even if that means reading
+    // past the end of the buffer and wrapping round to its start. 0 = no floor.
     int distribute = kPerShape;
     int waveCycles = 1;
+    int minCycles = kMinShapeCycles;
     // Points per shape after even arc-length resampling (0 = keep input points).
     // Fixed sample positions, starting at the anchor, stop the wave shimmering
     // when the input's points slide along the outline (e.g. MetaballsV3), and
@@ -385,8 +394,10 @@ inline void buildShape(const std::vector<float>& x, const std::vector<float>& y,
         double wrapped = w - std::floor(w);
         if(!s.closed && wrapped == 0 && w > 0) wrapped = 1;   // open end reads last sample
         // By Length reads only this shape's window of whole cycles, as a loop.
+        // Floored shares can run past the buffer's end: wrap to its start.
         const bool shared = c.distribute == kByLength;
-        const double read = shared ? windowStart + wrapped * windowSpan : wrapped;
+        double read = wrapped;
+        if(shared) { read = windowStart + wrapped * windowSpan; read -= std::floor(read); }
         const double wave = sampleAlong(c.wave, read, shared || s.closed, 0, 1, .5);
         s.target[j] = (2 * wave - 1) * sampleAlong(c.amount, t, s.closed, -1, 1, 0);
         width[j] = sampleAlong(c.smooth, t, s.closed, 0, 1, 0);
@@ -405,9 +416,13 @@ inline void buildShape(const std::vector<float>& x, const std::vector<float>& y,
     frame.shapes.push_back(std::move(s));
 }
 
-// Whole cycles per shape in proportion to length; at least one each when
-// there are enough. Largest-deficit greedy, so the total is always exact.
-inline std::vector<int> shareCycles(const std::vector<double>& length, int total) {
+// Smallest share any shape gets: minCycles, or total if it is lower.
+inline int minimumShare(int total, int minCycles) { return std::max(0, std::min(minCycles, total)); }
+
+// Whole cycles per shape in proportion to length, never below minimumShare.
+// Largest-deficit greedy, so the shares add up to total exactly unless the
+// floor alone needs more (then each shape gets just the floor).
+inline std::vector<int> shareCycles(const std::vector<double>& length, int total, int minCycles) {
     const size_t count = length.size();
     std::vector<int> share(count, 0);
     double sum = 0;
@@ -415,9 +430,9 @@ inline std::vector<int> shareCycles(const std::vector<double>& length, int total
     if(count == 0 || total <= 0 || !(sum > 0)) return share;
     std::vector<double> ideal(count);
     for(size_t i = 0; i < count; ++i) ideal[i] = total * length[i] / sum;
-    int left = total;
-    if(size_t(total) >= count) { std::fill(share.begin(), share.end(), 1); left -= int(count); }
-    for(; left > 0; --left) {
+    const int floorShare = minimumShare(total, minCycles);
+    std::fill(share.begin(), share.end(), floorShare);
+    for(int left = total - floorShare * int(count); left > 0; --left) {
         size_t best = 0;
         for(size_t i = 1; i < count; ++i)
             if(ideal[i] - share[i] > ideal[best] - share[best]) best = i;
@@ -429,13 +444,15 @@ inline std::vector<int> shareCycles(const std::vector<double>& length, int total
 // Keeps last frame's shares while they stay close to fair, so a blob that
 // slowly grows does not flicker between 8 and 9 cycles at the halfway point:
 // a shape changes count only once its fair share is 3/4 of a cycle away.
-inline std::vector<int> stickyCycles(const std::vector<double>& length, int total,
+inline std::vector<int> stickyCycles(const std::vector<double>& length, int total, int minCycles,
                                      const std::vector<int>& previous) {
-    const auto fresh = shareCycles(length, total);
+    const auto fresh = shareCycles(length, total, minCycles);
     if(previous.size() != fresh.size()) return fresh;
-    int previousTotal = 0;
+    int previousTotal = 0, freshTotal = 0;
     for(int p : previous) previousTotal += p;
-    if(previousTotal != total) return fresh;
+    for(int f : fresh) freshTotal += f;
+    if(previousTotal != freshTotal) return fresh;
+    for(int p : previous) if(p < minimumShare(total, minCycles)) return fresh;
     double sum = 0;
     for(double l : length) sum += l;
     for(size_t i = 0; i < fresh.size(); ++i) {
@@ -537,7 +554,8 @@ inline Frame prepare(const std::vector<float>& x, const std::vector<float>& y, c
                 previous.push_back((*cycleHints)[best].cycles);
             }
         }
-        const auto share = detail::stickyCycles(length, total, previous);
+        const int minCycles = std::max(0, std::min(c.minCycles, 1 << 16));
+        const auto share = detail::stickyCycles(length, total, minCycles, previous);
         int done = 0;
         for(size_t k = 0; k < measured.size(); ++k) {
             windowStart[measured[k]] = double(done) / total;
