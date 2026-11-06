@@ -1,5 +1,49 @@
 # ofxOceanodeVectorGraphics
 
+## Border Boundary
+
+Available under **Vector Graphics → Border Boundary**. Pushes XY vertices toward
+the viewport centre to keep them inside an inset rounded square in normalized
+0–1 space. It preserves vertex order, point count, repeated closing vertices and
+`-1` path separators. Straight segments between output vertices also stay inside
+the convex boundary.
+
+| Parameter | Meaning |
+| --- | --- |
+| `X`, `Y` | Coordinate vectors, including points outside 0–1. Send Y before X: only an X event calculates and publishes outputs. |
+| **Border** | Section separator. |
+| `Border distance` | Inset from each viewport side, 0–0.5; default 0.05. At 0.5 all vertices collapse to the centre. |
+| `Falloff` | Width of the inward feather in normalized coordinate units, measured along rays from the centre; default 0.05. Zero gives a hard radial clamp. |
+| `Curve` | Power of the attenuation ramp, 0.1–8; default 1. Larger values give a firmer edge, smaller values a softer compression. |
+| `Roundness` | 0 gives a square, 1 a circle; default 0. Intermediate values round its corners while keeping the same side bounds. |
+| **Outputs** | Section separator. |
+| `Out.X`, `Out.Y` | Constrained coordinates. Both are staged before events; Y is notified before X. |
+
+The unchanged interior ends one Falloff distance before the boundary along each
+centre ray. The soft transition slows outward motion smoothly to zero; all
+output points remain within the hard boundary, including for far-outside inputs.
+The transition spans some **input** positions outside the boundary so it can join
+the unchanged interior and hard cap without a jump or a fold. For example, on
+the right centre ray with Border distance 0.1, Falloff 0.1 and Curve 1, input
+X = 0.8 stays 0.8, input X = 0.9 becomes 0.875, and input X ≥ 1 becomes 0.9.
+This deforms vertices radially; it does not translate each shape as a rigid body
+or insert clipping vertices. Falloff is limited to the available ray length.
+
+Control edits are sampled on the next X event. Unequal vector lengths skip
+calculation and retain the last complete output pair. Equal empty inputs clear
+both outputs. A `-1` on either axis, or a nonfinite coordinate, produces a paired
+`-1` break at that index. Send the original upstream geometry on each update:
+repeatedly feeding the softened output back into the input compounds compression.
+
+Processing is O(vertices), with reusable output buffers, no per-path allocation,
+and no trigonometry or neighbour searches. Interior points take a fast pass;
+`pow` is used only within the feather, with multiplication shortcuts for Curve
+1 and 2. Run `python3 tests/border_boundary_regression.py` for standalone geometry,
+real OF event checks under ASan/UBSan, and full addon registration syntax checks.
+Add `--core-only` to omit OF dependencies or `--benchmark` for optimized core
+timings at 500 and 3,000 vertices. Timings exclude parameter publication/rendering;
+visual verification requires rebuilding the host app.
+
 ## Body Repulsion
 
 Available under **Vector Graphics → Body Repulsion**. Body points retain their

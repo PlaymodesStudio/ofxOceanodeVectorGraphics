@@ -39,6 +39,7 @@
 #include "shapeFeather.h"
 #include "shapeLength.h"
 #include "borderMask.h"
+#include "borderBoundary.h"
 #include "svg2Texture.h"
 #include "vectorPrimitives.h"
 
@@ -83,6 +84,7 @@ void registerModels(ofxOceanode &o){
 	o.registerModel<shapeFeather>("Vector Graphics");
 	o.registerModel<shapeLength>("Vector Graphics");
 	o.registerModel<borderMask>("Border Mask");
+	o.registerModel<borderBoundary>("Vector Graphics");
 	o.registerModel<svg2Texture>("Vector Graphics");
 	o.registerModel<vectorPrimitives>("Vector Graphics");
 	o.registerModel<barMaker>("Vector Graphics");
